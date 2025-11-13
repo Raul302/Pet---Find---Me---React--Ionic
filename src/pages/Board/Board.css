@@ -1,0 +1,71 @@
+.logo-toolbar {
+  --background: #ffffff;
+  padding-top: 10px;
+  height: 50px;
+  /* padding-left: 8px;
+  padding-right: 8px; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.logo-img {
+  height: 25px; /* ajusta según lo que se vea mejor */
+  width: auto;
+  object-fit: contain;
+}
+
+body {
+  --background: #ffffff;
+}
+
+ion-content {
+    --background: #e4dddd;
+}
+
+ion-title {
+    --background-color: #ffffff;
+}
+
+.carousel-wrapper{
+    background-color: #ffffff; /* gris claro */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    margin-left: 5px;
+    margin-right: 5px;
+    /* margin: 50px; */
+    /* padding: 5px; */
+}
+.swiper {
+  /* background-color: #ffffff; gris claro */
+  width: 95%;
+  max-width: 95%; 
+  aspect-ratio: 2/1;
+  max-height: 100px;
+  /* height: 150px; */
+}
+
+.swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  /* padding-top: 10%; */
+  /* background-color: #fff; opcional para fondo uniforme */
+}
+
+.swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* o 'contain' si prefieres mostrar todo sin recorte */
+  border-radius: 8px;
+}
+
+.select-location {
+  background-color: #4ca5f8; /* fondo rosado suave */
+  padding: 4px 12px;
+  border-radius: 6px;
+  /* margin: 12px 0; */
+}

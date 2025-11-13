@@ -1,0 +1,56 @@
+.login-page {
+    --background: white;
+    height: 100%;
+}
+
+.bck-white {
+    --background: white;
+}
+
+.nobox{
+    box-shadow: none;
+}
+
+.centered-img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ion-text-center{
+    font-size: 28px;
+}
+.login-img {
+  max-width: 100%;
+  height: auto;
+  
+}
+
+.text-color-black{
+    color:black;
+}
+
+.centered-text-block {
+  text-align: center;
+  margin-bottom: 16px; /* opcional para separar de los inputs */
+}
+
+.underline-blue { 
+    text-decoration: underline;
+    color: blue;
+}
+
+.top-spacing{
+    margin-top: 50px;
+}
+
+.text-wh-bol{
+    font-weight: bold;
+    color: white;
+}
+
+.input-error {
+  border: 1px solid red;
+}
+

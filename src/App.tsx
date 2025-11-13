@@ -14,6 +14,7 @@ import { ellipse, square, triangle } from 'ionicons/icons';
 import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
+import Login from  './pages/Login/Login';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -44,44 +45,63 @@ import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import Board from './pages/Board/Board';
 
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/tab1">
-            <Tab1 />
-          </Route>
-          <Route exact path="/tab2">
-            <Tab2 />
-          </Route>
-          <Route path="/tab3">
-            <Tab3 />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/tab1" />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="tab1" href="/tab1">
-            <IonIcon aria-hidden="true" icon={triangle} />
-            <IonLabel>Tab 1</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/tab2">
-            <IonIcon aria-hidden="true" icon={ellipse} />
-            <IonLabel>Tab 2</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab3" href="/tab3">
-            <IonIcon aria-hidden="true" icon={square} />
-            <IonLabel>Tab 3</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
-    </IonReactRouter>
-  </IonApp>
+ <IonApp>
+  <IonReactRouter>
+    <IonRouterOutlet>
+      {/* Rutas fuera de las tabs */}
+      <Route exact path="/login">
+        <Login />
+      </Route>
+
+      {/* Rutas con tabs */}
+      <Route path="/tabs">
+        <IonTabs>
+          <IonRouterOutlet>
+            <Route exact path="/tabs/board">
+              <Board />
+            </Route>
+            <Route exact path="/tabs/tab2">
+              <Tab2 />
+            </Route>
+            <Route exact path="/tabs/tab3">
+              <Tab3 />
+            </Route>
+            <Route exact path="/tabs">
+              <Redirect to="/tabs/tab1" />
+            </Route>
+          </IonRouterOutlet>
+
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="Board" href="/tabs/board">
+              <IonIcon icon={triangle} />
+              <IonLabel>Tablero</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="tab2" href="/tabs/tab2">
+              <IonIcon icon={ellipse} />
+              <IonLabel>Tab 2</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="tab3" href="/tabs/tab3">
+              <IonIcon icon={square} />
+              <IonLabel>Tab 3</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        </IonTabs>
+      </Route>
+
+      {/* Redirección raíz */}
+      <Route exact path="/">
+        <Redirect to="/login" />
+      </Route>
+    </IonRouterOutlet>
+  </IonReactRouter>
+</IonApp>
+
+
 );
 
 export default App;
