@@ -1,6 +1,6 @@
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonHeader, IonIcon, IonPage, IonRow, IonSearchbar, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import './Board.css';
-import { card, cash, create, createOutline, heart, notificationsOutline, pencil, pencilOutline, personCircleOutline } from 'ionicons/icons';
+import { card, cash, create, createOutline, heart, location, notificationsOutline, pencil, pencilOutline, personCircleOutline } from 'ionicons/icons';
 
 // Settings to carrrousel - Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -10,28 +10,18 @@ import 'swiper/css/autoplay';
 import { Autoplay } from 'swiper/modules';
 
 
+// Static Examples
+
+import { animalsJson } from "../../hardcoded/Grid_Animals/StaticElements";
+import AppHeader from '../../components/Header/AppHeader';
+
+
 const Board: React.FC = () => {
+
     return (
         <IonPage className='blank_page'>
 
-            <IonToolbar className="logo-toolbar">
-                <IonButtons slot="start">
-                    <img
-                        src="/assets/images/logo_pet_find_me_sin_fondo_figma.png"
-                        alt="Logo Pet Find Me"
-                        className="logo-img"
-                    />
-                </IonButtons>
-
-                <IonButtons slot="end">
-                    <IonButton>
-                        <IonIcon  style={{color:'#4ca5f8'}} icon={personCircleOutline} />
-                    </IonButton>
-                    <IonButton>
-                        <IonIcon  style={{color:'#4ca5f8'}} icon={notificationsOutline} />
-                    </IonButton>
-                </IonButtons>
-            </IonToolbar>
+          <AppHeader />
 
 
             <IonContent fullscreen>
@@ -79,19 +69,87 @@ const Board: React.FC = () => {
 
                 </div>
 
-                {/* Grid View Pets */}
-                <div>
-<IonCard>
-  <img src="URL_DE_LA_IMAGEN_DEL_PERRO" alt="Foto del perro" />
-  <IonCardHeader>
-    <IonCardTitle>Nombre del perro</IonCardTitle>
-  </IonCardHeader>
-  <IonCardContent>
-                            <IonIcon size='large'  style={{color:'#ffffffff'}} icon={card} />
+                <div
+               >
+                    <IonSearchbar
+                        animated={true}
+                        color="secondary"
+                        placeholder='Buscar por rasgo  , ejemplo : Lunar en el ojo , mancha blanca , etc'
+                    />
+                    
+                </div>
 
-    <IonIcon name="heart" slot="end">ICONO</IonIcon>
-  </IonCardContent>
-</IonCard>
+                {/* Grid View Pets , DIV CONTAINER */}
+                <div className="cards-grid">
+                    {animalsJson.map((animal, idx: number) => (
+                        <IonCard  
+                        className="card-pets" key={animal.name ?? idx}>
+                            <div
+                                className="card-image-wrapper"
+                                style={{
+                                    backgroundImage: `url(${animal.photo ?? "/assets/images/static_resources_testing/cat.jpg"})`
+                                }}
+                            >
+                                <img
+                                    className="card-image-sizer"
+                                    src={animal.photo ?? "/assets/images/static_resources_testing/cat.jpg"}
+                                    alt=""
+                                    aria-hidden="true"
+                                />
+
+                                <IonButton
+                                    fill="clear"
+                                    className="card-image-icon"
+                                    onClick={() => console.log('favorite clicked', animal.name)}
+                                    aria-label={`Favorito ${animal.name}`}
+                                >
+                                    <IonText title='Recompensa'> $$</IonText>
+                                </IonButton>
+                            </div>
+
+                            <IonCardHeader>
+                                <IonCardTitle className='title_name_pet_card'>{animal.name}</IonCardTitle>
+                            </IonCardHeader>
+
+                            <IonCardContent>
+                                <IonText className='description_pet_card'>{animal.description}</IonText>
+                            </IonCardContent>
+
+                             <IonCardContent>
+                               <IonRow>
+                                 <IonIcon size='small' style={{  color: '#46b1ff ' }} icon={location} />
+
+                                 <IonText style={{fontWeight:'bold'}}>
+                                     Ultimo Lugar Visto : 
+                                 </IonText>
+                                
+                          
+                               </IonRow>
+
+                               <IonRow>
+      <IonText> 
+                                    {animal.last_seen_place}
+                                </IonText>
+                               </IonRow>
+                            </IonCardContent>
+                            <IonCardContent className="keywords-row">
+                                {animal.keywords && animal.keywords.map((kw, kidx) => (
+                                    <IonButton
+                                        key={kidx}
+                                        fill="clear"
+                                        className="keyword-chip"
+                                        onClick={() => console.log('keyword clicked', kw)}
+                                        aria-label={`Filtrar por ${kw}`}
+                                    >
+                                        <i className="fa-solid fa-hashtag" aria-hidden="true" />
+                                        <span  style={{fontSize:10}}className="keyword-text">{kw}</span>
+                                    </IonButton>
+                                ))}
+                            </IonCardContent>
+                            
+                            
+                        </IonCard>
+                    ))}
 
                 </div>
             </IonContent>

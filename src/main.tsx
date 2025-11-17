@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 
 
+// Font Awesome (icons as CSS classes)
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 import{ defineCustomElements }  from '@ionic/pwa-elements/loader';
 
 

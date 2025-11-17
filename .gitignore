@@ -8,6 +8,8 @@
 # testing
 /coverage
 
+/assets/DontBackup
+
 # production
 /dist
 

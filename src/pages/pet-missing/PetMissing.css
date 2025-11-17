@@ -1,0 +1,117 @@
+.subtitle {
+    color: #4ca5f8;
+  
+}
+
+.black-text {
+    color: rgb(117, 104, 104);
+}
+
+.paddding-report{
+
+/* Keywords chips */
+.keywords-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.keyword-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+.keyword-chip {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.04);
+    color: #333;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+}
+.keyword-chip i {
+    margin-right: 6px;
+}
+.remove-keyword {
+    background: transparent;
+    border: none;
+    color: #888;
+    margin-left: 6px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+.remove-keyword:hover { color: #e33; }
+    margin-top: 10px;
+}
+.carousel-wrapper {
+    padding: 10px;
+    /* espacio interior alrededor de todo el bloque */
+}
+
+ion-textarea {
+  height: 100px; /* Fixed height */
+}
+
+ion-item {
+    --background:rgb(32, 125, 231);
+    --border-color: rgb(105, 166, 235);
+    --border-width: 5px;
+    --border-radius: 8px;
+
+}
+
+ion-select{
+    --background:rgb(32, 125, 231);
+    --border-width: 0px;
+    --border: none;
+    --border-radius: 8px;
+
+}
+
+ion-list{
+    --background:rgb(32, 125, 231);
+    --border-width: 0px;
+    --border: none;
+    --border-radius: 8px;
+    --ion-item-background: rgb(32, 125, 231);
+
+
+}
+
+ion-label{
+    --background:rgb(32, 125, 231);
+    --border-width: 0px;
+    --border: none;
+    --border-radius: 8px;
+}
+
+
+/* Responsive breakpoints */
+ #map { 
+    height: 100vh;
+    min-height: 100vh;
+    width: 100wh;
+    min-width: 100wh;
+    /* background-color: red; */
+   }
+   
+@media (max-width: 1200px) {
+  #map { 
+    height: 600px;
+    min-height: 500px;
+    width: '100%';
+    min-width: 500px;
+   }
+}
+@media (max-width: 992px) {
+  .map { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+  .map { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 420px) {
+  .map { grid-template-columns: repeat(4, 1fr); }
+}

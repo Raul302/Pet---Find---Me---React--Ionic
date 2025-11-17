@@ -33,7 +33,7 @@ const history = useHistory();
 const handleLogin = () => {
   if (!validate_form()) return;
 
-
+  history.push('/tabs/board');
   //call API 
 
   // if( response.ok ) {

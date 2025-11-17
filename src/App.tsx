@@ -1,16 +1,19 @@
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
+  IonButton,
+  IonButtons,
   IonIcon,
   IonLabel,
   IonRouterOutlet,
   IonTabBar,
   IonTabButton,
   IonTabs,
+  IonToolbar,
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
+import { alertCircleOutline, ellipse, grid, notificationsOutline, personCircleOutline, square, triangle } from 'ionicons/icons';
 import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
@@ -46,10 +49,19 @@ import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 import Board from './pages/Board/Board';
+import PetMissing from './pages/pet-missing/PetMissing';
+
+import 'leaflet/dist/leaflet.css';
+
+
 
 setupIonicReact();
 
 const App: React.FC = () => (
+
+
+
+  
  <IonApp>
   <IonReactRouter>
     <IonRouterOutlet>
@@ -60,34 +72,35 @@ const App: React.FC = () => (
 
       {/* Rutas con tabs */}
       <Route path="/tabs">
+      
         <IonTabs>
           <IonRouterOutlet>
             <Route exact path="/tabs/board">
               <Board />
             </Route>
-            <Route exact path="/tabs/tab2">
-              <Tab2 />
+            <Route exact path="/tabs/report-missing">
+              <PetMissing />
             </Route>
-            <Route exact path="/tabs/tab3">
+            <Route exact path="/tabs/profile">
               <Tab3 />
             </Route>
             <Route exact path="/tabs">
-              <Redirect to="/tabs/tab1" />
+              <Redirect to="/tabs/board" />
             </Route>
           </IonRouterOutlet>
 
           <IonTabBar slot="bottom">
             <IonTabButton tab="Board" href="/tabs/board">
-              <IonIcon icon={triangle} />
+              <IonIcon icon={grid} />
               <IonLabel>Tablero</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="tab2" href="/tabs/tab2">
-              <IonIcon icon={ellipse} />
-              <IonLabel>Tab 2</IonLabel>
+            <IonTabButton tab="report-missing" href="/tabs/report-missing">
+              <IonIcon icon={alertCircleOutline} />
+              <IonLabel>Reportar</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="tab3" href="/tabs/tab3">
-              <IonIcon icon={square} />
-              <IonLabel>Tab 3</IonLabel>
+            <IonTabButton tab="tab3" href="/tabs/profile">
+              <IonIcon icon={personCircleOutline} />
+              <IonLabel>Perfil</IonLabel>
             </IonTabButton>
           </IonTabBar>
         </IonTabs>
