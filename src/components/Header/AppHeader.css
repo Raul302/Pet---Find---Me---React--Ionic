@@ -1,0 +1,37 @@
+.item-personalized{
+    --background: white;
+}
+
+.shotcut-personalized {
+    --background: white;
+  --color: rgb(85, 83, 83); /* Ionic's preferred way to set text color */
+}
+
+.shotcut-personalized ion-label,
+.shotcut-personalized h2,
+.shotcut-personalized p {
+  color:  rgb(85, 83, 83) !important;
+
+}
+/* Remove all borders from IonItem inside the menu */
+ion-menu ion-item {
+  --border-color: transparent !important;
+  --inner-border-width: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.custom-divider {
+  --background: transparent;   /* no fill */
+  --color: #ccc;               /* line color */
+  min-height: 1px;             /* reduce thickness */
+  height: 1px;                 /* force thin line */
+  padding: 0;                  /* remove extra spacing */
+  border: 2px solid;
+}
+
+
+.list-customized{
+        --ion-item-background: rgb(255, 255, 255);
+
+}

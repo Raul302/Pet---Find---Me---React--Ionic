@@ -1,0 +1,399 @@
+.reports-panel-content {
+  --background: #f5f5f5;
+}
+
+.reports-panel-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.panel-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.reports-count {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+/* Status Segment */
+.status-segment {
+  margin-bottom: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.status-segment ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  min-height: 48px;
+}
+
+.status-segment ion-badge {
+  margin-left: 8px;
+  font-size: 11px;
+}
+
+/* Filters Section */
+.filters-section {
+  margin-bottom: 20px;
+}
+
+.search-reports {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 200px;
+  --background: #ffffff;
+  --border-radius: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* Reports List */
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.no-reports {
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.no-reports-icon {
+  font-size: 64px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.no-reports p {
+  font-size: 16px;
+  color: #999;
+}
+
+/* Report Card */
+.report-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.report-card-content {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+}
+
+.report-image-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.report-image {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.type-chip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-weight: 600;
+}
+
+.report-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-pet-name {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff !important;
+  margin: 0;
+}
+
+.report-info-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.info-chip {
+  background-color: #f0f2f5;
+  font-size: 13px;
+  height: 28px;
+}
+
+.info-chip ion-icon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.report-description {
+  font-size: 14px;
+  color: #ffffff !important;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.report-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #ffffff !important;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Force specific meta text inside cards to white for readability */
+.report-card .meta-item,
+.report-card .meta-item span,
+.report-card .meta-item strong {
+  color: #ffffff !important;
+}
+
+.meta-item ion-icon {
+  font-size: 16px;
+  color: var(--ion-color-primary);
+}
+
+.report-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.report-actions ion-button {
+  font-size: 13px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+/* Edit Modal */
+.edit-modal-content {
+  --background: #f5f5f5;
+}
+
+.edit-modal-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.edit-form {
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.edit-form ion-item {
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .report-card-content {
+    flex-direction: column;
+  }
+
+  .report-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .report-actions {
+    justify-content: stretch;
+  }
+
+  .report-actions ion-button {
+    flex: 1;
+  }
+}
+
+
+.reported-lost{
+    color: red !important;
+}
+.reported-found {
+    color: green !important;
+}
+/* Ensure IonChip, IonIcon and IonLabel inside report cards are readable on dark cards */
+.report-card .info-chip,
+.report-card .info-chip ion-label,
+.report-card .info-chip ion-icon {
+  color: #ffffff !important;
+}
+
+.report-card .info-chip {
+  background-color: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.report-card .type-chip {
+  /* Let Ionic's color attribute control the chip color (danger/success).
+     Avoid forcing white so the chip text/background can follow the theme. */
+  color: inherit ;
+  background-color: unset !important;
+  border: none !important;
+}
+
+.report-card ion-badge {
+  color: #ffffff !important;
+  background-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Extra coverage for Firefox: target native buttons and inner spans */
+.report-card .report-actions button,
+.report-card .report-actions .button,
+.report-card .report-actions .button-native,
+.report-card .report-actions .button-inner,
+.report-card .report-actions .button-inner *,
+.report-card .report-actions .button-inner span {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* If Ionic renders text inside a <span> or <div> inside the button */
+.report-card .report-actions button span,
+.report-card .report-actions button div {
+  color: #ffffff !important;
+}
+
+
+/* Make sure action buttons inside report cards have white text and readable outlines */
+.report-card .report-actions ion-button,
+.report-card .report-actions ion-button .button-inner,
+.report-card .report-actions ion-button ion-icon,
+.report-card .report-actions button {
+  color: #ffffff !important;
+  --color: #ffffff !important;
+}
+
+.report-card .report-actions ion-button[fill="outline"] {
+  --border-color: rgba(255,255,255,0.18) !important;
+  color: #ffffff !important;
+}
+
+.report-card .report-actions ion-button[fill="solid"] {
+  --background: rgba(255,255,255,0.06) !important;
+  color: #ffffff !important;
+}
+
+.report-card .report-actions ion-button ion-icon {
+  color: #ffffff !important;
+}
+
+/* Stronger forcing of button text color inside report cards */
+.report-card ion-button {
+  --color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Some Ionic versions render the label inside .button-inner or .button-native */
+.report-card ion-button .button-inner,
+.report-card ion-button .button-inner *,
+.report-card ion-button .button-native,
+.report-card ion-button ion-label {
+  color: #ffffff !important;
+}
+
+.report-card ion-button[fill="outline"] {
+  --border-color: rgba(255,255,255,0.18) !important;
+  --color: #ffffff !important;
+}
+
+.report-card ion-button[fill="clear"] {
+  --color: #ffffff !important;
+}
+
+/* hover/focus states keep readable text */
+.report-card ion-button:hover,
+.report-card ion-button:focus {
+  color: #ffffff !important;
+  --color: #ffffff !important;
+}
+

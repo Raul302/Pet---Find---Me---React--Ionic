@@ -13,7 +13,7 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { alertCircleOutline, ellipse, grid, notificationsOutline, personCircleOutline, square, triangle } from 'ionicons/icons';
+import { alertCircleOutline, clipboardOutline, ellipse, grid, notificationsOutline, personCircleOutline, square, triangle } from 'ionicons/icons';
 import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
@@ -52,6 +52,11 @@ import Board from './pages/Board/Board';
 import PetMissing from './pages/pet-missing/PetMissing';
 
 import 'leaflet/dist/leaflet.css';
+import PetsDetail from './pages/PetsDetail/PetsDetail';
+import Profile from './pages/Profile/Profile';
+import QuestionPlace from './pages/Place/QuestionPlace';
+import ReportsPanel from './pages/ReportsPanel/ReportsPanel';
+import Register from './pages/Register/Register';
 
 
 
@@ -69,6 +74,13 @@ const App: React.FC = () => (
       <Route exact path="/login">
         <Login />
       </Route>
+         <Route exact path="/register">
+        <Register />
+      </Route>
+
+       <Route exact path="/location">
+        <QuestionPlace />
+      </Route>
 
       {/* Rutas con tabs */}
       <Route path="/tabs">
@@ -81,9 +93,20 @@ const App: React.FC = () => (
             <Route exact path="/tabs/report-missing">
               <PetMissing />
             </Route>
-            <Route exact path="/tabs/profile">
-              <Tab3 />
+
+            <Route exact path="/tabs/reports-panel">
+              <ReportsPanel />
             </Route>
+          
+            {/* <Route exact path="/tabs/profile">
+            <Profile />
+            </Route> */}
+
+             <Route exact path="/tabs/pets/:id">
+              <PetsDetail />
+            </Route>
+
+
             <Route exact path="/tabs">
               <Redirect to="/tabs/board" />
             </Route>
@@ -98,10 +121,14 @@ const App: React.FC = () => (
               <IonIcon icon={alertCircleOutline} />
               <IonLabel>Reportar</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="tab3" href="/tabs/profile">
+            <IonTabButton tab="reports-panel" href="/tabs/reports-panel">
+              <IonIcon icon={clipboardOutline} />
+              <IonLabel>Panel</IonLabel>
+            </IonTabButton>
+            {/* <IonTabButton tab="profile" href="/tabs/profile">
               <IonIcon icon={personCircleOutline} />
               <IonLabel>Perfil</IonLabel>
-            </IonTabButton>
+            </IonTabButton> */}
           </IonTabBar>
         </IonTabs>
       </Route>

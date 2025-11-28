@@ -2,6 +2,7 @@ const animalsJson =
 
 [
   {
+    id:1,
     "name": "Luna",
     "description": "Perrita mestiza, muy tranquila y sociable.",
     "reward": true,
@@ -11,6 +12,7 @@ const animalsJson =
     "keywords": ["perrita", "mestiza", "tranquila", "sociable", "pelaje blanco", "manchas negras", "collar azul", "oreja derecha caída"]
   },
   {
+    id:2,
     "name": "Max",
     "description": "Perro labrador juguetón, de 3 años.",
     "reward": false,
@@ -20,6 +22,7 @@ const animalsJson =
     "keywords": ["perro", "labrador", "juguetón", "3 años", "pelaje dorado", "cojera leve", "sin collar"]
   },
   {
+    id:3,
     "name": "Maya",
     "description": "Gatita gris muy cariñosa, esterilizada.",
     "reward": true,
@@ -29,6 +32,7 @@ const animalsJson =
     "keywords": ["gata", "gris", "cariñosa", "esterilizada", "ojos verdes", "mancha blanca", "collar rosa"]
   },
   {
+    id:4,
     "name": "Toby",
     "description": "Perro pequeño tipo salchicha, muy activo.",
     "reward": false,
@@ -38,6 +42,7 @@ const animalsJson =
     "keywords": ["perro", "pequeño", "salchicha", "activo", "pelaje marrón", "vendaje", "sin placa"]
   },
   {
+    id:5,
     "name": "Nina",
     "description": "Coneja blanca, muy dócil y tranquila.",
     "reward": true,
@@ -47,6 +52,7 @@ const animalsJson =
     "keywords": ["coneja", "blanca", "dócil", "tranquila", "orejas largas", "mancha gris", "collar amarillo"]
   },
   {
+    id:6,
     "name": "Simón",
     "description": "Gato negro de ojos amarillos, tímido.",
     "reward": false,
@@ -56,6 +62,7 @@ const animalsJson =
     "keywords": ["gato", "negro", "tímido", "ojos amarillos", "cola larga", "oreja rasgada", "sin collar"]
   },
   {
+    id:7,
     "name": "Coco",
     "description": "Perico verde que repite palabras.",
     "reward": true,
@@ -65,6 +72,7 @@ const animalsJson =
     "keywords": ["perico", "verde", "repite palabras", "plumas amarillas", "pico curvo"]
   },
   {
+    id:8,
     "name": "Bruno",
     "description": "Perro pastor alemán, entrenado.",
     "reward": true,
@@ -74,6 +82,7 @@ const animalsJson =
     "keywords": ["pastor alemán", "entrenado", "obediente", "pelaje negro y café", "collar metálico"]
   },
   {
+     id:9,
     "name": "Lola",
     "description": "Gata blanca con ojos azules, muy curiosa.",
     "reward": false,
@@ -83,6 +92,7 @@ const animalsJson =
     "keywords": ["gata", "blanca", "ojos azules", "curiosa", "cola corta", "collar con GPS"]
   },
   {
+    id:10,
     "name": "Rocky",
     "description": "Perro pitbull, muy cariñoso.",
     "reward": true,
@@ -92,6 +102,7 @@ const animalsJson =
     "keywords": ["pitbull", "cariñoso", "pelaje gris", "collar rojo", "cicatriz en la pata"]
   },
   {
+    id:11,
     "name": "Kiwi",
     "description": "Gato naranja, muy travieso.",
     "reward": false,
@@ -101,6 +112,7 @@ const animalsJson =
     "keywords": ["gato", "naranja", "travieso", "rayas", "sin collar", "maúlla fuerte"]
   },
   {
+    id:12,
     "name": "Daisy",
     "description": "Perrita chihuahua, muy nerviosa.",
     "reward": true,
@@ -110,6 +122,7 @@ const animalsJson =
     "keywords": ["perrita", "chihuahua", "nerviosa", "pelaje beige", "collar rosa", "tiembla"]
   },
   {
+    id:13,
     "name": "Leo",
     "description": "Gato gris, muy tranquilo.",
     "reward": false,
@@ -119,6 +132,7 @@ const animalsJson =
     "keywords": ["gato", "gris", "tranquilo", "ojos verdes", "collar azul"]
   },
   {
+    id:14,
     "name": "Mimi",
     "description": "Coneja gris, muy juguetona.",
     "reward": true,
@@ -128,6 +142,7 @@ const animalsJson =
     "keywords": ["coneja", "gris", "juguetona", "orejas cortas", "mancha blanca", "collar con cascabel"]
   },
   {
+    id:15,
     "name": "Thor",
     "description": "Perro husky, muy energético.",
     "reward": true,
@@ -137,6 +152,7 @@ const animalsJson =
     "keywords": ["husky", "energético", "ojos azules", "pelaje blanco y gris", "collar negro"]
   },
   {
+    id:16,
     "name": "Bella",
     "description": "Gata tricolor, muy cariñosa.",
     "reward": false,
@@ -146,6 +162,7 @@ const animalsJson =
     "keywords": ["gata", "tricolor", "cariñosa", "pelaje tricolor", "collar morado"]
   },
   {
+    id:17,
     "name": "Rex",
     "description": "Perro rottweiler, muy obediente.",
     "reward": true,
@@ -155,6 +172,7 @@ const animalsJson =
     "keywords": ["rottweiler", "obediente", "pelaje negro", "collar grueso", "corte en la oreja"]
   },
   {
+    id:18,
     "name": "Nube",
     "description": "Gata blanca, muy tímida.",
     "reward": false,
@@ -164,6 +182,7 @@ const animalsJson =
     "keywords": ["gata", "blanca", "tímida", "pelaje largo", "ojos celestes"]
   },
   {
+    id:19,
     "name": "Chispa",
     "description": "Perro mestizo, muy activo.",
     "reward": true,

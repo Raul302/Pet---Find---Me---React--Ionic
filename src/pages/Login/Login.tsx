@@ -33,7 +33,7 @@ const history = useHistory();
 const handleLogin = () => {
   if (!validate_form()) return;
 
-  history.push('/tabs/board');
+  history.push('/location');
   //call API 
 
   // if( response.ok ) {
@@ -86,9 +86,17 @@ const validate_form = () => {
                 <IonCardContent>
 
                 <div className="centered-text-block">
-  <IonText className="text-color-black">¿No tienes una cuenta?</IonText>
-  <IonText className="underline-blue"> Crea una cuenta y únete hoy mismo a la comunidad</IonText>
-</div>
+                  <IonText className="text-color-black">¿No tienes una cuenta?</IonText>
+                  <IonText
+                    className="underline-blue"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => history.push('/register')}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {' '}Crea una cuenta y únete hoy mismo a la comunidad
+                  </IonText>
+                </div>
                   <IonInput
                     label="Correo electrónico"
                     labelPlacement="floating"
@@ -111,9 +119,9 @@ const validate_form = () => {
                   />
                   {errors.password && <IonText color="danger"><p>{errors.password}</p></IonText>}
 
-                  <IonButton expand="block"  onClick={handleLogin} className="text-wh-bol ion-margin-top">Entrar</IonButton>
+                  <IonButton expand="block"  onClick={handleLogin} className="text-wh-bol ion-margin-top brown-element">Entrar</IonButton>
                   <IonText color="medium">
-                    <p className="ion-text-center ion-margin-top">¿Olvidaste tu contraseña?</p>
+                    {/* <p className="ion-text-center ion-margin-top">¿Olvidaste tu contraseña?</p> */}
                   </IonText>
                 </IonCardContent>
               </IonCard>

@@ -1,2 +1,8 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+:root {
+  --color-primary: rgb(185, 55, 55);
+  --color-secondary: #3dc2ff;
+  --spacing-base: 16px;
+  --border-radius: 8px;
+}

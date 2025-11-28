@@ -54,3 +54,8 @@
   border: 1px solid red;
 }
 
+
+.brown-element{
+     --background: --var(--color-primary);
+}
+

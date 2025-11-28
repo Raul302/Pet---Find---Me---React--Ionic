@@ -1,0 +1,35 @@
+/* Basic styles for Register page */
+.register-page {
+  --background: #ffffff;
+}
+.register-grid {
+  min-height: 100vh;
+}
+.centered-img-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+.register-img {
+  width: 120px;
+  height: auto;
+}
+.bck-white.nobox {
+  background: #fff;
+  box-shadow: none;
+}
+.mntop {
+  margin-top: 8px;
+}
+.text-color-black {
+  color: #0b1720;
+}
+.brown-element {
+  --background: #7a4b2a;
+  --color: #fff;
+}
+
+@media (max-width: 520px) {
+  .register-img { width: 96px; }
+}
