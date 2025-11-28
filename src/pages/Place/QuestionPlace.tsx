@@ -1,24 +1,59 @@
 import {
-    IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonModal,
-    IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonInput,
+  IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonModal,
+  IonButton,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonInput,
+  IonToast,
+  IonList,
+  IonItem,
+  IonLabel,
 } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import './QuestionPlace.css';
 import { Geolocation } from '@capacitor/geolocation';
+import { mapsApiKey } from '../../assets/DontBackup/Credentials';
+import { useRef } from 'react';
+import { IonSpinner } from '@ionic/react';
+import api, { api_endpoint } from '../../config/api';
 
 import { Capacitor } from '@capacitor/core';
 import { useHistory } from 'react-router';
 
 const QuestionPlace: React.FC = () => {
 
-    console.log('QUESTIONPLACE MOUNTED');
-
   const [isOpen, setIsOpen] = useState(true);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [query, setQuery] = useState('');
+  const [addressFailed, setAddressFailed] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const mountedRef = useRef(true);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+  const [options, setOptions] = useState<any[]>([]);
+  const searchTimeout = useRef<number | null>(null);
+  const queryRef = useRef(query);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [address,address_formated] = useState('');
+
+  // keep ref in sync
+  useEffect(() => { queryRef.current = query; }, [query]);
+
+  // central setter to help diagnose/avoid overwrites
+  const updateQuery = (val: string, source = 'unknown') => {
+    const safe = val == null ? '' : String(val);
+    if (queryRef.current === safe) {
+      console.debug('[QuestionPlace] updateQuery skipped (same)', { safe, source });
+      return;
+    }
+    console.debug('[QuestionPlace] updateQuery', { from: source, value: safe });
+    setQuery(safe);
+    queryRef.current = safe;
+  };
+
+  // debug: use updateQuery logs instead of global query log
 
   const history = useHistory();
 
@@ -27,45 +62,249 @@ const QuestionPlace: React.FC = () => {
         return role !== 'gesture';
     }
 
+    console.log('ADDRES FORMATED',address_formated);
  useEffect(() => {
   if (isOpen) {
+    setLoadingAddress(true);
     if (Capacitor.getPlatform() === 'web') {
+      console.log('SE EJECUTA WEB')
       // navegador
       navigator.geolocation.getCurrentPosition(
-        (pos) => console.log("Web:", pos.coords),
-        (err) => console.error("Error web:", err)
+        async (pos) => {
+          console.log('Web:', pos.coords);
+          const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setCoords(c);
+          const coordStr = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+          const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
+          console.log('ADDR',addr);
+            if (addr) {
+              setQuery(addr);
+              // updateQuery(addr);
+              setAddressFailed(false);
+            } else {
+             if (!toastOpen) {
+                setToastMsg('No se pudo obtener la dirección automáticamente. Por favor, escríbela manualmente.');
+                setToastOpen(true);
+              }
+            }
+          setLoadingAddress(false);
+        },
+        (err) => {
+          console.error('Error web:', err);
+          // PERMISSION_DENIED === 1
+          if (err && err.code === 1) {
+            setAddressFailed(true);
+            setToastMsg('No se concedieron permisos de ubicación. Por favor, escribe la dirección manualmente.');
+            setToastOpen(true);
+          }
+          setLoadingAddress(false);
+        }
       );
     } else {
       // móvil con Capacitor
+      
       (async () => {
+              console.log('SE EJECUTA MOVIL')
+
         try {
+          setLoadingAddress(true);
           // 🔑 Verificar permisos actuales
           const permStatus = await Geolocation.checkPermissions();
           console.log("Estado de permisos:", permStatus);
 
           if (permStatus.location !== 'granted') {
             // 🔑 Si no están concedidos, pedirlos
-            await Geolocation.requestPermissions();
+            const req = await Geolocation.requestPermissions();
+            if (req.location !== 'granted') {
+              // usuario negó permisos
+              setAddressFailed(true);
+              setToastMsg('No se concedieron permisos de ubicación. Por favor, escribe la dirección manualmente.');
+              setToastOpen(true);
+              setLoadingAddress(false);
+              return;
+            }
           }
 
           // 🔑 Obtener ubicación
           const pos = await Geolocation.getCurrentPosition();
-          setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          console.log("Móvil:", pos.coords);
+          const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setCoords(c);
+          const coordStr = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+          const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
+          if (mountedRef.current) {
+            if (addr ) {
+              updateQuery(addr);
+              setAddressFailed(false);
+            } else {
+              updateQuery(addr);
+              setAddressFailed(true);
+              if (!toastOpen) {
+                setToastMsg('No se pudo obtener la dirección automáticamente. Por favor, escríbela manualmente.');
+                setToastOpen(true);
+              }
+            }
+          }
+          console.log('Móvil:', pos.coords);
+          setLoadingAddress(false);
         } catch (err) {
           console.error("Error al obtener ubicación:", err);
+          setLoadingAddress(false);
         }
       })();
     }
   }
 }, [isOpen]);
 
+useEffect(() => {
+  return () => {
+    mountedRef.current = false;
+  };
+}, []);
+
+// end debug
+// reverse geocode helper
+async function fetchAddress(lat: number, lng: number) {
+  try {
+    if (mapsApiKey) {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${mapsApiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.results && data.results.length > 0) return data.results[0].formatted_address;
+      return '';
+    }
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+    const data = await res.json();
+    return data?.display_name || '';
+  } catch (err) {
+    console.warn('fetchAddress error', err);
+    return '';
+  }
+}
+
+// Try reverse geocoding several times until a non-empty address is returned
+async function getAddressWithRetries(lat: number, lng: number, maxRetries = 3, delayMs = 700) {
+  for (let i = 0; i < maxRetries; i++) {
+    const addr = await fetchAddress(lat, lng);
+    if (addr && addr.trim().length > 0) return addr;
+    // wait before retrying
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  // final attempt
+  return await fetchAddress(lat, lng);
+}
+
+
+// Search location by free text (debounced)
+const SearchLocation = (q: string) => {
+  const query = q ?? '';
+  if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+  if (!query || query.trim().length === 0) {
+    setOptions([]);
+    return;
+  }
+  searchTimeout.current = window.setTimeout(async () => {
+    try {
+      // First try restricting to Mexico for better local results
+      const base = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${mapsApiKey}`;
+      const restrictedUrl = base + `&components=country:MX`;
+
+      let data: any = null;
+      try {
+        const res = await fetch(restrictedUrl);
+        data = await res.json();
+      } catch (err) {
+        console.warn('SearchLocation restricted fetch error', err);
+      }
+
+      // If restricted search didn't return usable results, fall back to general search
+      if (!data || !data.results || data.results.length === 0) {
+        try {
+          const res2 = await fetch(base);
+          data = await res2.json();
+        } catch (err) {
+          console.warn('SearchLocation fallback fetch error', err);
+          data = { results: [] };
+        }
+      }
+
+      const results = data.results || [];
+
+      // Helper: check if a result is in Mexico
+      const isMexico = (r: any) => {
+        try {
+          return (r.address_components || []).some((c: any) => Array.isArray(c.types) && c.types.includes('country') && (c.short_name === 'MX' || c.long_name === 'Mexico'));
+        } catch (e) {
+          return false;
+        }
+      };
+
+      // Sort so Mexico results come first
+      results.sort((a: any, b: any) => {
+        const ma = isMexico(a) ? 0 : 1;
+        const mb = isMexico(b) ? 0 : 1;
+        return ma - mb;
+      });
+
+      setOptions(results);
+    } catch (err) {
+      console.warn('SearchLocation error', err);
+      setOptions([]);
+    }
+  }, 500);
+};
+
 
 
   const saveAddressUser = () => {
-    setIsOpen(false);
-      history.push('/tabs/board');
+    // legacy: call accept=true
+    submitAddress(true);
   }
+
+  // Submit address to backend. Called by both buttons (accept=true for 'Usar esta direccion', accept=false for 'No usar')
+  const submitAddress = async (accept: boolean) => {
+    // if still loading address, don't allow
+    if (loadingAddress || submitting) return;
+
+    // require some value (unless user explicitly chooses 'No usar')
+    if (accept && (!query || query.trim().length === 0)) {
+      setAddressFailed(true);
+      setToastMsg('Debes ingresar una dirección antes de continuar.');
+      setToastOpen(true);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        address: query || null,
+        coords: coords || null,
+        accepted: accept,
+      };
+
+      // NOTE: adjust endpoint to your backend. Current default: `${api_endpoint}/location/update`
+      const resp = await fetch(`${api_endpoint}/location/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new Error(txt || `HTTP ${resp.status}`);
+      }
+
+      setToastMsg('Dirección enviada correctamente.');
+      setToastOpen(true);
+      setIsOpen(false);
+      history.push('/tabs/board');
+    } catch (err: any) {
+      console.error('submitAddress error', err);
+      setToastMsg('Error al enviar la dirección. Intenta nuevamente.');
+      setToastOpen(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
     return (
         <IonPage >
             <IonContent fullscreen>
@@ -81,33 +320,72 @@ const QuestionPlace: React.FC = () => {
                             <IonTitle>Ubicacion</IonTitle>
                         </IonToolbar>
                     </IonHeader>
-                    <IonContent className="custom-modal-location">
+                    <IonContent className="custom-modal-location" style={{position: 'relative'}}>
+                        {/* overlay to block interactions while loading or submitting */}
+                        {(loadingAddress || submitting) && (
+                          <div style={{position:'absolute',inset:0,background:'rgba(255,255,255,0.6)',zIndex:40,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <div style={{textAlign:'center'}}>
+                              <IonSpinner color="danger" />
+                              <div style={{marginTop:8,color:'#333'}}>{loadingAddress ? 'Obteniendo ubicación...' : 'Enviando...'}</div>
+                            </div>
+                          </div>
+                        )}
                         <IonGrid className="ion-text-center ion-align-items-center" style={{ height: '100%' }}>
                             <IonRow className="ion-justify-content-center ion-align-items-center" style={{ height: '100%' }}>
                                 <IonCol size="12">
                                     <IonRow>
                                         <IonCol>
-                                            <IonInput
-                                            style={{fontSize:20}}
-                                                label="Ingresar manualmente"
-                                                labelPlacement="floating"
-                                                fill="outline"
-                                                // value={query}
-                                                // onIonInput={(e: any) => {
-                                                //     const val = e.detail.value;
-                                                //     setQuery(val);
-                                                //     SearchLocation(val);
-                                                // }}
-                                                placeholder="Ejemplo: Calle Falsa 123, Springfield"
-                                                className="black-text"
-                                            />
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                  {loadingAddress ? (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', padding: 12 }}>
+                                                      <IonSpinner  color="danger" name="crescent" />
+                                                      <div style={{color:'black'}}>Obteniendo ubicación y dirección...</div>
+                                                    </div>
+                                                  ) : null}
+                                                  <IonInput
+                                                    style={{fontSize:20}}
+                                                    label="Ingresar manualmente"
+                                                    labelPlacement="floating"
+                                                    fill="outline"
+                                                    value={query}
+                                                    disabled={loadingAddress || submitting}
+                                                    onIonInput={(e: any) => {
+                                                      const raw = e?.detail?.value;
+                                                      const val = raw == null ? '' : String(raw);
+                                                      updateQuery(val, 'input');
+                                                      SearchLocation(val);
+                                                      if (val.trim().length > 0) setAddressFailed(false);
+                                                    }}
+                                                    placeholder="Ejemplo: Calle Falsa 123, Springfield"
+                                                    className="black-text"
+                                                  />
+                                                  {options.length > 0 && (
+                                                    <IonList>
+                                                      {options.map((opt: any, idx: number) => (
+                                                        <IonItem key={idx} button onClick={() => { updateQuery(opt.formatted_address || opt.display_name || '', 'suggestion'); setOptions([]); }}>
+                                                          <IonLabel>{opt.formatted_address || opt.display_name}</IonLabel>
+                                                        </IonItem>
+                                                      ))}
+                                                    </IonList>
+                                                  )}
+                                                 
+                                                </div>
                                         </IonCol>
                                     </IonRow>
-                                    <IonButton  className='brown-element' onClick={saveAddressUser} style={{color:'#fff',fontWeight:'600'}} expand="block">Recordar</IonButton>
+                                    <IonButton disabled={loadingAddress || submitting || !query || query.trim().length===0} className='brown-element' onClick={() => submitAddress(true)} style={{color:'#fff',fontWeight:'600'}} expand="block">Usar esta direccion</IonButton>
+                                    <IonButton disabled={loadingAddress || submitting} className='brown-element' onClick={() => submitAddress(false)} style={{color:'#fff',fontWeight:'600'}} expand="block">No usar</IonButton>
                                 </IonCol>
                             </IonRow>
                         </IonGrid>
                     </IonContent>
+                    <IonToast
+                      isOpen={toastOpen}
+                      onDidDismiss={() => setToastOpen(false)}
+                      message={toastMsg}
+                      duration={5000}
+                      position="bottom"
+                      color="danger"
+                    />
 
                 </IonModal>
             </IonContent>

@@ -5,20 +5,37 @@ import { IonContent } from '@ionic/react';
 import '../../pages/pet-missing/PetMissing.css';
 
 interface MapProps {
-  onLocationSelect: (lat: number, lng: number, address: string) => void
+  onLocationSelect: (lat: number, lng: number, address: string) => void;
+  mapsApiKey?: string; // optional Google Maps Geocoding API key
 }
 
-const Map: React.FC<MapProps> = ({ onLocationSelect }) => {
+const Map: React.FC<MapProps> = ({ onLocationSelect, mapsApiKey }) => {
 
-      //   Calling api to formate the coordenades to string address
-    const fetchAddress = async (lat: number, lng: number) => {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-        );
+  // Reverse geocoding: use Google Geocoding API when mapsApiKey is provided,
+  // otherwise fall back to Nominatim (OpenStreetMap).
+  const fetchAddress = async (lat: number, lng: number): Promise<string> => {
+    try {
+      if (mapsApiKey) {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${mapsApiKey}`;
+        const res = await fetch(url);
         const data = await res.json();
-        return data.display_name; // full address string
-        };
+        if (data && data.results && data.results.length > 0) {
+          return data.results[0].formatted_address;
+        }
+        return '';
+      }
 
+      // fallback to Nominatim
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      const data = await res.json();
+      return data?.display_name || '';
+    } catch (err) {
+      console.warn('Reverse geocode failed', err);
+      return '';
+    }
+  };
 
   const mapRef = useRef<L.Map | null>(null);
 
@@ -31,28 +48,26 @@ const Map: React.FC<MapProps> = ({ onLocationSelect }) => {
       attribution: '© OpenStreetMap contributors',
     }).addTo(mapRef.current);
 
-    // ✅ Listen for clicks
+    // Listen for clicks
     mapRef.current.on('click', async (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
 
       // Get address from API
-  const address = await fetchAddress(lat, lng);
+      const address = await fetchAddress(lat, lng);
 
+      // Add marker at clicked location with a popup (address may be empty)
+      L.marker([lat, lng]).addTo(mapRef.current!).bindPopup(address || 'Ubicación').openPopup();
 
-      // Add marker at clicked location
-      L.marker([lat, lng]).addTo(mapRef.current!)
-    .bindPopup(address)        .openPopup();
-
-      // Pass coords back to parent
-      onLocationSelect(lat, lng , address);
+      // Pass coords + address back to parent
+      onLocationSelect(lat, lng, address);
     });
-  }, [onLocationSelect]);
+  }, [onLocationSelect, mapsApiKey]);
 
   return (
-  <IonContent fullscreen>
-    <div id="map" ></div>
+    <IonContent fullscreen>
+      <div id="map"></div>
     </IonContent>
-    )
+  );
 };
 
 export default Map;

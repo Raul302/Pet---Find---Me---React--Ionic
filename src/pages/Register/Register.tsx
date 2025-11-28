@@ -1,4 +1,6 @@
+import api, { api_endpoint } from '../../config/api';
 import React, { useState } from 'react';
+import { useIonViewWillLeave } from '@ionic/react';
 import {
   IonPage,
   IonContent,
@@ -11,7 +13,8 @@ import {
   IonCardContent,
   IonInput,
   IonButton,
-  IonText
+  IonText,
+  IonSpinner
 } from '@ionic/react';
 import './Register.css';
 import { useHistory } from 'react-router';
@@ -25,6 +28,8 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<{ fullName?: string; email?: string; password?: string; confirmPassword?: string }>(
     {}
   );
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const history = useHistory();
 
@@ -43,13 +48,56 @@ const Register: React.FC = () => {
 
   const handleRegister = () => {
     if (!validate()) return;
+    setServerError('');
+    setLoading(true);
+    (async () => {
+      try {
+          const resp = await fetch(api_endpoint + '/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullname: fullName,
+            email,
+            phone: phone || null,
+            password,
+            confirm_password: confirmPassword
+          })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          // backend returns { error: '...' }
+          setServerError(data?.error || 'Error al crear la cuenta');
+          setLoading(false);
+          return;
+        }
 
-    const payload = { fullName, email, password, phone };
-    console.log('Register payload (mock):', payload);
-    alert('Cuenta creada (mock). Serás redirigido al login.');
-    // en producción aquí llamarías a la API de registro
-    history.push('/login');
+        cleanForm();
+      
+        // Redirect to login
+        history.push('/login');
+      } catch (err) {
+        setServerError('No se pudo conectar con el servidor');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
+
+
+  const cleanForm = () => {
+      // clear form state after successful registration
+        setFullName('');
+        setEmail('');
+        setPhone('');
+        setPassword('');
+        setConfirmPassword('');
+        setErrors({});
+        setServerError('');
+  }
+  // Clear form when the view is about to be left (user navigates away)
+  useIonViewWillLeave(() => {
+    cleanForm()
+  });
 
   return (
     <IonPage>
@@ -66,6 +114,18 @@ const Register: React.FC = () => {
                   <IonCardTitle className="mntop text-color-black ion-text-center">Crear cuenta</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
+
+                {serverError && (
+                  <div style={{ marginBottom: 8 ,
+                    display:'flex', justifyContent: 'center',
+                    alignItems: 'center',
+                   backgroundColor: '#ffe6e6', padding: 8, borderRadius: 4 }}>
+                    <IonText
+                     style={{fontWeight: 'bold', justifyContent: 'center' , alignItems: 'center',
+                        textAlign: 'center'
+                     }} color="danger">{serverError}</IonText>
+                  </div>
+                )}
 
                   <IonInput
                     label="Nombre completo"
@@ -120,7 +180,15 @@ const Register: React.FC = () => {
                   />
                   {errors.confirmPassword && <IonText color="danger"><p>{errors.confirmPassword}</p></IonText>}
 
-                  <IonButton expand="block" onClick={handleRegister} className="text-wh-bol ion-margin-top brown-element">Crear cuenta</IonButton>
+                  <IonButton expand="block" onClick={handleRegister} className="text-wh-bol ion-margin-top brown-element" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <IonSpinner name="crescent" />&nbsp;Creando...
+                      </>
+                    ) : (
+                      'Crear cuenta'
+                    )}
+                  </IonButton>
 
                   <IonText color="small">
                     <IonText className="text-color-black"> ¿Ya tienes cuenta? </IonText>

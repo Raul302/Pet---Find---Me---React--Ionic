@@ -10,8 +10,11 @@ import {
   IonCardContent,
   IonInput,
   IonButton,
-  IonText
+  IonText,
+  IonSpinner,
+  useIonViewWillLeave
 } from '@ionic/react';
+import api, { api_endpoint } from '../../config/api';
 import './Login.css';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
@@ -25,26 +28,57 @@ const [ password , set_password ] = useState('');
 
 // Manejar errores de session
 const [errors, set_errors] = useState<{ email?: string; password?: string }>({});
+const [loading, set_loading] = useState(false);
+const [serverError, setServerError] = useState('');
 
 
 const history = useHistory();
 
+const cleanForm = () => {
+  set_email('');
+  set_password('');
+  set_errors({});
+  setServerError('');
+  set_loading(false);
+}
+
 
 const handleLogin = () => {
   if (!validate_form()) return;
+  setServerError('');
+  set_loading(true);
+  (async () => {
+    try {
+      const resp = await fetch(api_endpoint + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setServerError(data?.error || 'Error en inicio de sesión');
+        set_loading(false);
+        return;
+      }
+      // store tokens if provided
+      if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      cleanForm();
+      history.push('/location');
+    } catch (err) {
+      setServerError('No se pudo conectar con el servidor');
+    } finally {
+      set_loading(false);
+    }
+  })();
+};
 
-  history.push('/location');
-  //call API 
-
-  // if( response.ok ) {
-    
-  //   //redirect to Board
-  //   history.push('/board'); // o la ruta que desees
-
-  // }
+  // Clear form when the view is about to be left (user navigates away)
+  useIonViewWillLeave(() => {
+    cleanForm()
+  });
 
 
-}
 const validate_form = () => {
 
     const newErrors: typeof errors = {};
@@ -70,6 +104,7 @@ const validate_form = () => {
   return (
     <IonPage >
       <IonContent fullscreen className="login-page ion-padding">
+        
         <IonGrid className="login-grid">
           <IonRow className="ion-justify-content-center ion-align-items-center">
             <IonCol sizeXs="12" sizeSm="8" sizeMd="6" sizeLg="4">
@@ -79,6 +114,17 @@ const validate_form = () => {
 
 
               <IonCard className='bck-white nobox'>
+                     {serverError && (
+                                  <div style={{ marginBottom: 8 ,
+                                    display:'flex', justifyContent: 'center',
+                                    alignItems: 'center',
+                                   backgroundColor: '#ffe6e6', padding: 8, borderRadius: 4 }}>
+                                    <IonText
+                                     style={{fontWeight: 'bold', justifyContent: 'center' , alignItems: 'center',
+                                        textAlign: 'center'
+                                     }} color="danger">{serverError}</IonText>
+                                  </div>
+                                )}
                 <IonCardHeader>
                   <IonCardTitle className="mntop text-color-black ion-text-center">Login</IonCardTitle>
                   
@@ -128,6 +174,7 @@ const validate_form = () => {
             </IonCol>
           </IonRow>
         </IonGrid>
+        <div className="login-footer">Kiba Studios S.A de C.V <sup>®</sup></div>
       </IonContent>
     </IonPage>
   );

@@ -1,6 +1,7 @@
 .login-page {
-    --background: white;
-    height: 100%;
+  --background: white;
+  min-height: 100vh;
+  position: relative;
 }
 
 .bck-white {
@@ -57,5 +58,20 @@
 
 .brown-element{
      --background: --var(--color-primary);
+}
+
+/* Footer in login page */
+.login-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+.login-footer sup {
+  font-size: 10px;
+  margin-left: 4px;
 }
 
