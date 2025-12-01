@@ -291,7 +291,7 @@ const PetMissing: React.FC = () => {
                     <IonButton
                       fill="clear"
                       className="keyword-chip"
-                      onClick={() => setSearchText(kw.toString())}
+                      // onClick={() => setSearchText(kw.toString())}
                       aria-label={`Filtrar por ${kw}`}
                     >
                       <i className="fa-solid fa-hashtag" aria-hidden="true" />
