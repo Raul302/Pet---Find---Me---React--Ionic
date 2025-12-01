@@ -9,10 +9,30 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { AuthProvider } from './hooks/Context/AuthContext/AuthContext';
 import { IonReactRouter } from '@ionic/react-router';
 
+// Service workers
+import { registerSW } from 'virtual:pwa-register';
+
 defineCustomElements(window);
+
+
+// Service workers
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm("Hay una nueva versión disponible. ¿Quieres actualizar?")) {
+      updateSW(true); 
+    }
+    console.log("PROBADO AUTOUPDATE SERVICE WORKERS");
+  },
+  onOfflineReady() {
+    console.log("PROBANDO sin conexion - OFFLINE - TEST ");
+  },
+});
+
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
+
+
 
 root.render(
    <React.StrictMode>

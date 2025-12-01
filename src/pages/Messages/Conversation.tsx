@@ -233,7 +233,7 @@ const Conversation: React.FC = () => {
                 <IonButton onClick={() => history.push('/tabs/messages')} slot="start">Atrás</IonButton>
                 <IonTitle style={{ textAlign: 'center' }}>{selectedConversation?.pet?.name ?? 'Conversación'}</IonTitle>
                 <IonButtons slot="end">
-                    { !isExpired ?
+                    { isExpired ?
                       <IonButton 
                     onClick={handleOpenRateModal}
                     color={"tertiary"} size='small' fill="outline"  >
