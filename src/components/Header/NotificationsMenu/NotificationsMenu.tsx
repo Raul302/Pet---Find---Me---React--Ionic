@@ -1,5 +1,5 @@
 // UserMenu.tsx
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   IonMenu,
   IonContent,
@@ -8,19 +8,23 @@ import {
   IonItemDivider,
   IonButton,
   IonIcon,
-    IonCard,
+  IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonLabel
+  IonLabel,
+  IonMenuToggle
 } from '@ionic/react';
 import { cart, chatbubbleOutline, close, mailUnread, mailUnreadOutline, ribbonOutline, thumbsUp } from 'ionicons/icons';
 import { menuController } from '@ionic/core';
 
 const NotificationsMenu: React.FC = () => {
+  const menuRef = useRef<HTMLIonMenuElement>(null);
+
+
   return (
-<IonMenu menuId="notificationsMenu" side="end" contentId="main-content">
-          <IonContent className="item-personalized">
+<IonMenu ref={menuRef} menuId="notificationsMenu" side="end" contentId="main-content">
+        <IonContent className="item-personalized">
         <IonList className="list-customized">
           {/* header row */}
           <IonItem className="item-personalized" lines="none">
@@ -30,46 +34,49 @@ const NotificationsMenu: React.FC = () => {
               style={{ height: '32px', marginRight: '8px' }}
             />
             <div style={{ flex: 1 }}></div>
-            <IonButton fill="clear"
-  onClick={() => menuController.close('notificationsMenu')}  
-             >
-              <IonIcon style={{ color: '#000' }} icon={close} />
-            </IonButton>
+              <IonButton fill="clear"
+              onClick={async () => {
+      await (menuRef.current as any)?.setOpen(false); // reliable close
+    }}
+              >
+                <IonIcon style={{ color: '#000' }} icon={close} />
+              </IonButton>
+
           </IonItem>
 
           {/* divider line */}
           <IonItemDivider className="custom-divider" />
 
           {/* menu options */}
-       <IonItem     routerLink="/perks" className='shotcut-personalized' button detail={true}>
-             <IonIcon style={{color:'#000'}} size='small' slot="start" icon={thumbsUp} />
+          <IonItem routerLink="/perks" className='shotcut-personalized' button detail={true}>
+            <IonIcon style={{ color: '#000' }} size='small' slot="start" icon={thumbsUp} />
 
-        <IonLabel>
-            <p>Paulina recomendo tu publicacion</p>
-        </IonLabel>
-        </IonItem>
+            <IonLabel>
+              <p>Paulina recomendo tu publicacion</p>
+            </IonLabel>
+          </IonItem>
 
-         <IonItem     routerLink="/perks" className='shotcut-personalized' button detail={true}>
-             <IonIcon style={{color:'#000'}} size='small' slot="start" icon={mailUnreadOutline} />
+          <IonItem routerLink="/perks" className='shotcut-personalized' button detail={true}>
+            <IonIcon style={{ color: '#000' }} size='small' slot="start" icon={mailUnreadOutline} />
 
-        <IonLabel>
-            <p>Jorgais quiere ponerse en contacto contigo</p>
-        </IonLabel>
-        </IonItem>
+            <IonLabel>
+              <p>Jorgais quiere ponerse en contacto contigo</p>
+            </IonLabel>
+          </IonItem>
 
-  <IonItem  className='shotcut-personalized' button detail={true}>
-      <IonIcon style={{color:'#000'}} size='small' slot="start" icon={chatbubbleOutline} />
-        <IonLabel>
-            <p>Gera comento</p>
-        </IonLabel>
-        </IonItem>
+          <IonItem className='shotcut-personalized' button detail={true}>
+            <IonIcon style={{ color: '#000' }} size='small' slot="start" icon={chatbubbleOutline} />
+            <IonLabel>
+              <p>Gera comento</p>
+            </IonLabel>
+          </IonItem>
 
-         <IonItem  className='shotcut-personalized' button detail={true}>
-              <IonIcon style={{color:'#000'}} slot="start" icon={ribbonOutline} />
-        <IonLabel>
-            <p>Ganaste una insignia</p>
-        </IonLabel>
-        </IonItem>
+          <IonItem className='shotcut-personalized' button detail={true}>
+            <IonIcon style={{ color: '#000' }} slot="start" icon={ribbonOutline} />
+            <IonLabel>
+              <p>Ganaste una insignia</p>
+            </IonLabel>
+          </IonItem>
 
 
         </IonList>

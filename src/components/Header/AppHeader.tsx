@@ -23,31 +23,31 @@ const AppHeader: React.FC = () => {
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
 
   return (
-    <>
-      <IonHeader>
-        <IonToolbar  id="main-content" className="logo-toolbar">
-          <IonButtons slot="start">
-            <img
-              src="/assets/images/logo_pet_find_me_sin_fondo_figma.png"
-              alt="Logo Pet Find Me"
-              className="logo-img"
-            />
-          </IonButtons>
+      <>
+        <IonHeader>
+          <IonToolbar  id="main-content" className="logo-toolbar">
+            <IonButtons slot="start">
+              <img
+                src="/assets/images/logo_pet_find_me_sin_fondo_figma.png"
+                alt="Logo Pet Find Me"
+                className="logo-img"
+              />
+            </IonButtons>
 
-          <IonButtons slot="end">
-            <IonMenuButton menu="userMenu">
-              <IonIcon style={{ color: 'var(--color-primary)' }} icon={personCircleOutline} />
-          </IonMenuButton>
-             <IonMenuButton menu="notificationsMenu">
-              <IonIcon style={{ color: 'var(--color-primary)' }} icon={notificationsOutline} />
+            <IonButtons slot="end">
+              <IonMenuButton menu="userMenu">
+                <IonIcon style={{ color: 'var(--color-primary)' }} icon={personCircleOutline} />
             </IonMenuButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+              <IonMenuButton menu="notificationsMenu">
+                <IonIcon style={{ color: 'var(--color-primary)' }} icon={notificationsOutline} />
+              </IonMenuButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
 
-  <UserMenu/>
-  <NotificationsMenu/>
-    </>
+    <UserMenu/>
+    <NotificationsMenu/>
+      </>
   );
 };
 

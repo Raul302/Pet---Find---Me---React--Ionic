@@ -16,7 +16,8 @@ import {
 } from '@ionic/react';
 import api, { api_endpoint } from '../../config/api';
 import './Login.css';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AuthContext } from '../../hooks/Context/AuthContext/AuthContext';
 import { useHistory } from 'react-router';
 
 
@@ -42,6 +43,7 @@ const cleanForm = () => {
   set_loading(false);
 }
 
+const { setUser } = useContext(AuthContext);
 
 const handleLogin = () => {
   if (!validate_form()) return;
@@ -60,11 +62,18 @@ const handleLogin = () => {
         set_loading(false);
         return;
       }
-      // store tokens if provided
+      // store data and tokens if provided
       if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      if (data.user) localStorage.setItem('data_user', JSON.stringify(data.user));
+      setUser(data.user); 
       cleanForm();
+      
       history.push('/location');
+      setTimeout(() => {
+
+      }, 1000);
+
     } catch (err) {
       setServerError('No se pudo conectar con el servidor');
     } finally {

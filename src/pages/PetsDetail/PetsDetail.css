@@ -139,11 +139,13 @@ ion-title {
   padding: 12px;
   background: #ffffff;
   border-radius: 12px;
-  margin-top: 16px;
+  border: 1px solid #dcdcdc;
+  margin-top: 50px;
+  margin-bottom: 50px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  position:  static;
+  /* bottom: 0;
+  z-index: 10; */
 }
 
 .comment-avatar {
@@ -270,7 +272,7 @@ ion-title {
 }
 
 .like-button.liked {
-  color: #f91880;
+  color: #007bff;
 }
 
 .like-button ion-icon {
@@ -280,7 +282,17 @@ ion-title {
 .like-count {
   min-width: 12px;
 }
+/* Default dot style */
+.swiper-pagination-bullet {
+  background-color: var(--color-primary, #aaa); /* your custom color */
+  opacity: 0.5;
+}
 
+/* Active dot style */
+.swiper-pagination-bullet-active {
+  background-color: --var(--color-primary);
+  opacity: 1;
+}
 /* Contact tab styles */
 .contact-section {
   padding: 16px;

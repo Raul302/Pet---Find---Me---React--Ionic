@@ -22,7 +22,6 @@ import { Capacitor } from '@capacitor/core';
 import { useHistory } from 'react-router';
 
 const QuestionPlace: React.FC = () => {
-
   const [isOpen, setIsOpen] = useState(true);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [query, setQuery] = useState('');
@@ -42,7 +41,7 @@ const QuestionPlace: React.FC = () => {
   useEffect(() => { queryRef.current = query; }, [query]);
 
   // central setter to help diagnose/avoid overwrites
-  const updateQuery = (val: string, source = 'unknown') => {
+  const updateQuery = (val: string, source = 'unknown', coordenades: { lat: number; lng: number } | null = null) => {
     const safe = val == null ? '' : String(val);
     if (queryRef.current === safe) {
       console.debug('[QuestionPlace] updateQuery skipped (same)', { safe, source });
@@ -50,6 +49,7 @@ const QuestionPlace: React.FC = () => {
     }
     console.debug('[QuestionPlace] updateQuery', { from: source, value: safe });
     setQuery(safe);
+    if (coordenades) setCoords(coordenades ?? null);
     queryRef.current = safe;
   };
 
@@ -62,21 +62,17 @@ const QuestionPlace: React.FC = () => {
         return role !== 'gesture';
     }
 
-    console.log('ADDRES FORMATED',address_formated);
  useEffect(() => {
   if (isOpen) {
     setLoadingAddress(true);
     if (Capacitor.getPlatform() === 'web') {
-      console.log('SE EJECUTA WEB')
       // navegador
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          console.log('Web:', pos.coords);
           const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setCoords(c);
           const coordStr = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
           const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
-          console.log('ADDR',addr);
             if (addr) {
               setQuery(addr);
               // updateQuery(addr);
@@ -103,14 +99,12 @@ const QuestionPlace: React.FC = () => {
     } else {
       // móvil con Capacitor
       
-      (async () => {
-              console.log('SE EJECUTA MOVIL')
+    (async () => {
 
         try {
           setLoadingAddress(true);
           // 🔑 Verificar permisos actuales
           const permStatus = await Geolocation.checkPermissions();
-          console.log("Estado de permisos:", permStatus);
 
           if (permStatus.location !== 'granted') {
             // 🔑 Si no están concedidos, pedirlos
@@ -133,10 +127,10 @@ const QuestionPlace: React.FC = () => {
           const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
           if (mountedRef.current) {
             if (addr ) {
-              updateQuery(addr);
+              updateQuery(addr, 'geolocation', c);
               setAddressFailed(false);
             } else {
-              updateQuery(addr);
+              updateQuery(addr, 'geolocation', c);
               setAddressFailed(true);
               if (!toastOpen) {
                 setToastMsg('No se pudo obtener la dirección automáticamente. Por favor, escríbela manualmente.');
@@ -144,7 +138,7 @@ const QuestionPlace: React.FC = () => {
               }
             }
           }
-          console.log('Móvil:', pos.coords);
+          // mobile position received
           setLoadingAddress(false);
         } catch (err) {
           console.error("Error al obtener ubicación:", err);
@@ -244,7 +238,6 @@ const SearchLocation = (q: string) => {
         const mb = isMexico(b) ? 0 : 1;
         return ma - mb;
       });
-
       setOptions(results);
     } catch (err) {
       console.warn('SearchLocation error', err);
@@ -255,36 +248,29 @@ const SearchLocation = (q: string) => {
 
 
 
-  const saveAddressUser = () => {
-    // legacy: call accept=true
-    submitAddress(true);
-  }
-
+ 
   // Submit address to backend. Called by both buttons (accept=true for 'Usar esta direccion', accept=false for 'No usar')
   const submitAddress = async (accept: boolean) => {
+
     // if still loading address, don't allow
     if (loadingAddress || submitting) return;
 
-    // require some value (unless user explicitly chooses 'No usar')
-    if (accept && (!query || query.trim().length === 0)) {
-      setAddressFailed(true);
-      setToastMsg('Debes ingresar una dirección antes de continuar.');
-      setToastOpen(true);
-      return;
-    }
-
+  
     setSubmitting(true);
     try {
       const payload = {
-        address: query || null,
-        coords: coords || null,
+        address_preference: accept ? (query || null ) : "not_address",
+        coords: accept ? (coords || null ) : null, 
         accepted: accept,
       };
 
       // NOTE: adjust endpoint to your backend. Current default: `${api_endpoint}/location/update`
-      const resp = await fetch(`${api_endpoint}/location/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const resp = await fetch(`${api_endpoint}/auth/users/update`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        },
         body: JSON.stringify(payload),
       });
 
@@ -295,8 +281,13 @@ const SearchLocation = (q: string) => {
 
       setToastMsg('Dirección enviada correctamente.');
       setToastOpen(true);
-      setIsOpen(false);
-      history.push('/tabs/board');
+     // esperar 3 segundos antes de redirigir
+          setTimeout(() => {
+           setIsOpen(false);
+            history.push('/tabs/board');
+
+          }, 2000);
+          
     } catch (err: any) {
       console.error('submitAddress error', err);
       setToastMsg('Error al enviar la dirección. Intenta nuevamente.');
@@ -362,7 +353,7 @@ const SearchLocation = (q: string) => {
                                                   {options.length > 0 && (
                                                     <IonList>
                                                       {options.map((opt: any, idx: number) => (
-                                                        <IonItem key={idx} button onClick={() => { updateQuery(opt.formatted_address || opt.display_name || '', 'suggestion'); setOptions([]); }}>
+                                                        <IonItem key={idx} button onClick={() => { updateQuery(opt.formatted_address || opt.display_name || '', 'suggestion',opt.geometry.location); setOptions([]); }}>
                                                           <IonLabel>{opt.formatted_address || opt.display_name}</IonLabel>
                                                         </IonItem>
                                                       ))}
@@ -384,7 +375,7 @@ const SearchLocation = (q: string) => {
                       message={toastMsg}
                       duration={5000}
                       position="bottom"
-                      color="danger"
+                      color="secondary"
                     />
 
                 </IonModal>

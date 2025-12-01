@@ -1,4 +1,4 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation, useHistory } from 'react-router-dom';
 import {
   IonApp,
   IonButton,
@@ -57,19 +57,42 @@ import Profile from './pages/Profile/Profile';
 import QuestionPlace from './pages/Place/QuestionPlace';
 import ReportsPanel from './pages/ReportsPanel/ReportsPanel';
 import Register from './pages/Register/Register';
+import Messages from './pages/Messages/Messages';
+import Conversation from './pages/Messages/Conversation';
+import PrivateRoute from './Routers/PrivateRouter';
+import AppHeader from './components/Header/AppHeader';
+import { LiveLocationViewer } from './hooks/SharingLocation/MapToLookRealLocation';
 
 
 
 setupIonicReact();
 
-const App: React.FC = () => (
+const App: React.FC = () => {
+const history = useHistory();
+const data_user = localStorage.getItem('data_user') || '{}';
+const user = JSON.parse(data_user).id ? JSON.parse(data_user) : null;
 
+  const ConditionalHeader: React.FC = () => {
+    const location = useLocation();
+    const hidePaths = ['/login', '/register', '/location', '/live/','/live/:token'];
+    const pathname = location?.pathname || '';
+    const shouldHide = hidePaths.some(p => pathname.startsWith(p));
+    if (shouldHide) return null;
+    return <AppHeader />;
+  };
 
+  return (
+  <IonApp>
 
-  
- <IonApp>
   <IonReactRouter>
+    <ConditionalHeader />
+    
     <IonRouterOutlet>
+
+      {/* Ruta publica para mostrar mapas */}
+      <Route path="/live/:token" component={LiveLocationViewer} />
+
+
       {/* Rutas fuera de las tabs */}
       <Route exact path="/login">
         <Login />
@@ -77,14 +100,14 @@ const App: React.FC = () => (
          <Route exact path="/register">
         <Register />
       </Route>
+      <PrivateRoute path="/location">
+      <QuestionPlace />
+    </PrivateRoute>
 
-       <Route exact path="/location">
-        <QuestionPlace />
-      </Route>
+     
 
       {/* Rutas con tabs */}
-      <Route path="/tabs">
-      
+      <PrivateRoute path="/tabs">
         <IonTabs>
           <IonRouterOutlet>
             <Route exact path="/tabs/board">
@@ -96,6 +119,14 @@ const App: React.FC = () => (
 
             <Route exact path="/tabs/reports-panel">
               <ReportsPanel />
+            </Route>
+
+            <Route exact path="/tabs/messages">
+              <Messages />
+            </Route>
+
+            <Route exact path="/tabs/messages/conversation">
+              <Conversation />
             </Route>
           
             {/* <Route exact path="/tabs/profile">
@@ -121,9 +152,10 @@ const App: React.FC = () => (
               <IonIcon icon={alertCircleOutline} />
               <IonLabel>Reportar</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="reports-panel" href="/tabs/reports-panel">
-              <IonIcon icon={clipboardOutline} />
-              <IonLabel>Panel</IonLabel>
+
+            <IonTabButton tab="messages" href="/tabs/messages" onClick={() => { history.push('/tabs/messages'); }}>
+              <IonIcon icon={notificationsOutline} />
+              <IonLabel>Mensajes</IonLabel>
             </IonTabButton>
             {/* <IonTabButton tab="profile" href="/tabs/profile">
               <IonIcon icon={personCircleOutline} />
@@ -131,7 +163,7 @@ const App: React.FC = () => (
             </IonTabButton> */}
           </IonTabBar>
         </IonTabs>
-      </Route>
+      </PrivateRoute>
 
       {/* Redirección raíz */}
       <Route exact path="/">
@@ -139,9 +171,8 @@ const App: React.FC = () => (
       </Route>
     </IonRouterOutlet>
   </IonReactRouter>
-</IonApp>
+</IonApp>);
 
-
-);
+};
 
 export default App;

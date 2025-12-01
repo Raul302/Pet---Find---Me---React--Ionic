@@ -1,9 +1,13 @@
+/* Board page styles (cleaned and normalized) */
+
+:root {
+  --card-image-height: 200px; /* change this value to adjust image area */
+}
+
 .logo-toolbar {
   --background: #ffffff;
   padding-top: 10px;
   height: 50px;
-  /* padding-left: 8px;
-  padding-right: 8px; */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -11,66 +15,74 @@
 }
 
 .logo-img {
-  height: 25px; /* ajusta según lo que se vea mejor */
+  height: 25px;
   width: auto;
   object-fit: contain;
 }
 
-body {
-  --background: #ffffff;
+/* Searchbar sizing and appearance */
+.searchBar {
+  --height: 48px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 10px;
+  font-size: 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.searchBar .searchbar-input,
+.searchBar .searchbar-md .searchbar-input,
+.searchBar .searchbar-ios .searchbar-input {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 12px;
 }
 
-ion-content {
-    --background: #e4dddd;
-}
-
-ion-title {
-    --background-color: #ffffff;
-}
+body { --background: #ffffff; }
+ion-content { --background: #e4dddd; }
+ion-title { --background-color: #ffffff; }
 
 .carousel-wrapper{
-    background-color: #ffffff; /* gris claro */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    margin-left: 5px;
-    margin-right: 5px;
-    /* margin: 50px; */
-    /* padding: 5px; */
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  margin: 8px 5px;
 }
-.swiper {
-  /* background-color: #ffffff; gris claro */
-  width: 95%;
-  max-width: 95%; 
-  aspect-ratio: 2/1;
-  max-height: 100px;
-  /* height: 150px; */
+.swiper { width: 95%; max-width: 95%; aspect-ratio: 2/1; max-height: 200px; }
+.swiper-slide { display:flex; align-items:center; justify-content:center; padding:10px 0; }
+.swiper-slide img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+
+.select-location { background-color: #4ca5f8; padding: 4px 12px; border-radius: 6px; }
+
+/* Card layout: make all cards equal height */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 12px;
+  align-items: stretch;
+  grid-auto-rows: 1fr; /* each row will have equal height */
 }
 
-.swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  /* padding-top: 10%; */
-  /* background-color: #fff; opcional para fondo uniforme */
+/* ensure router links fill the grid cell */
+.cards-grid a,
+.cards-grid ion-router-link {
+  display: block;
+  height: 100%;
 }
 
-.swiper-slide img {
+.cards-grid ion-card {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* o 'contain' si prefieres mostrar todo sin recorte */
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 12px;
 }
 
-.select-location {
-  background-color: #4ca5f8; /* fondo rosado suave */
-  padding: 4px 12px;
-  border-radius: 6px;
-  /* margin: 12px 0; */
-}
-
-/* Card image wrapper and overlay icon */
+/* fixed image area so cards remain same height */
 .card-image-wrapper {
   position: relative;
   width: 100%;
@@ -78,112 +90,59 @@ ion-title {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  flex: 0 0 var(--card-image-height);
 }
 
-.card-image {
-  display: block;
-  width: 100%;
-  height: auto; /* let the image keep its natural aspect ratio */
-  object-fit: contain; /* use 'contain' to show the whole image without cropping; use 'cover' to fill */
+.swiper-custom { width:100%; height:100%; }
+
+.card-image-sizer { display:block; width:100%; height:auto; visibility:hidden; }
+
+/* card content fills remaining space */
+.card-pets ion-card-header,
+.card-pets ion-card-content {
+  padding: 12px 16px;
 }
 
-/* modifier when you want to force a fixed height while preserving aspect via cover */
-.card-image.fixed-height {
-  height: 180px;
-  object-fit: cover;
+.card-pets ion-card-content.description_pet_card {
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
-.card-image-sizer {
-  display: block;
-  width: 100%;
-  height: auto; /* sizer image preserves natural aspect ratio */
-  visibility: hidden; /* hide the sizer but keep dimensions */
-}
-
-/* Grid layout for cards: 5 columns on wide screens, responsive downwards */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  /* gap: 12px;
-  padding: 12px; */
-}
-
-.cards-grid ion-card {
-  width: 95%;
-  height: auto;
-}
-
-.card-pets{
-  background-color: rgb(255, 255, 255);
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-}
-
-/* Responsive breakpoints */
-@media (max-width: 1200px) {
-  .cards-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (max-width: 992px) {
-  .cards-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 640px) {
-  .cards-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 420px) {
-  .cards-grid { grid-template-columns: repeat(1,1fr); }
-}
-
-.title_name_pet_card{
-  font-weight: bold;
-  font-size: 18px;
-  /* margin-top: 8px;
-  margin-left: 8px;  */
-  color: #000000;
-}
-.card-image-icon {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  --background: rgba(0,0,0,0.35);
-  border-radius: 999px;
-  color: #fff;
-  padding: 6px;
-}
-
-.card-image-icon ion-icon {
-  font-size: 18px;
-  color: #fff;
-}
-
-/* Keywords / hashtag chips */
-.keywords-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  padding-top: 8px;
-}
-
-.keyword-chip {
-  --padding-start: 6px;
-  --padding-end: 6px;
-  --background: rgba(76,165,248,0.08);
-  border-radius: 16px;
-  color: #177bdc; /* ionic blue */
-  font-size: 12px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.keyword-chip ion-icon {
-  font-size: 14px;
-  margin-right: 6px;
-}
-
-.keyword-text {
-  white-space: nowrap;
+/* truncate long descriptions (max 3 lines) */
+.description_pet_card {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+
+.title_name_pet_card{ font-weight: bold; font-size: 18px; color: #000000; }
+
+.card-image-icon { position:absolute; top:8px; right:8px; z-index:10; background: rgba(0,0,0,0.35); border-radius:999px; color:#fff; padding:6px; }
+.card-image-icon ion-icon { font-size:18px; color:#fff; }
+
+/* Keywords / hashtag chips */
+.keywords-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-top:8px; }
+.keyword-chip { --padding-start:6px; --padding-end:6px; --background: rgba(76,165,248,0.08); border-radius:16px; color:#177bdc; font-size:12px; height:28px; display:inline-flex; align-items:center; }
+.keyword-chip ion-icon { font-size:14px; margin-right:6px; }
+.keyword-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { 
+  
+  .cards-grid ion-card {
+  width: 85%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+.cards-grid { grid-template-columns: repeat(1, 2fr); } }
+
+

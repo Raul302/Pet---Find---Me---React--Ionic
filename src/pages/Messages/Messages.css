@@ -1,0 +1,70 @@
+/* Minimal styles for Messages page */
+.messages-list { padding: 12px; }
+.message-item {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 12px;
+	align-items: flex-start;
+	background: #ffffff;
+	padding: 10px;
+	border-radius: 10px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+	transition: box-shadow 160ms ease, transform 160ms ease;
+	border: 1px solid rgba(0,0,0,0.03);
+}
+.message-item:active { transform: translateY(1px); }
+.message-item:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.message-sender { font-weight: 700 }
+.message-content { margin-top: 6px }
+.message-time { font-size: 12px; color: #666 }
+
+/* Make the list container have some spacing from edges */
+.messages-container { padding: 8px }
+
+/* Centered loader wrapper */
+.messages-loader { display:flex; align-items:center; justify-content:center; padding: 18px 0 }
+
+/* Conversation thumbnails */
+.comment-photos img { border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+/* Modal customization */
+.photo-modal .modal-wrapper { background: transparent }
+
+/* Rate modal styles */
+.rate-modal .modal-wrapper {
+	background: transparent !important;
+}
+.rate-modal .modal-page {
+	background: rgba(0,0,0,0.32);
+}
+.rate-modal .modal-wrapper .modal-inner {
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+.rate-modal .modal-wrapper .modal-content {
+	background: #fff;
+	border-radius: 12px;
+	padding: 18px;
+	width: calc(100% - 40px);
+	max-width: 520px;
+	box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+.rate-modal .rate-btn {
+	border-radius: 8px;
+	font-weight: 600;
+	--padding-top: 10px;
+	--padding-bottom: 10px;
+}
+.rate-modal .rate-btn.useful {
+	background: linear-gradient(90deg,#28a745,#20c997);
+	color: #fff;
+}
+.rate-modal .rate-btn.not-useful {
+	background: linear-gradient(90deg,#6c757d,#adb5bd);
+	color: #fff;
+}
+.rate-modal .rate-cancel {
+	color: #6c757d;
+	margin-top: 6px;
+}

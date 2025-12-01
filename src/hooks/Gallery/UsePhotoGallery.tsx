@@ -62,9 +62,32 @@ export function usePhotoGallery() {
     });
   };
 
+  const clearPhotos = async () => {
+    try {
+      // On hybrid, try deleting files from filesystem
+      if (isPlatform('hybrid')) {
+        for (const p of photos) {
+          try {
+            await Filesystem.deleteFile({ path: p.filepath, directory: Directory.Data });
+          } catch (e) {
+            // ignore individual delete errors
+            console.warn('Failed deleting photo file', p.filepath, e);
+          }
+        }
+      }
+
+      // Clear stored metadata and state
+      await Preferences.remove({ key: PHOTOS_KEY });
+      setPhotos([]);
+    } catch (e) {
+      console.warn('clearPhotos error', e);
+    }
+  };
+
   return {
     photos,
     takePhoto,
+    clearPhotos,
   };
 }
 
