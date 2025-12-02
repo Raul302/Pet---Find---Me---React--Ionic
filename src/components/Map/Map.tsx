@@ -1,71 +1,110 @@
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useCallback, useMemo, useState } from 'react';
 import { IonContent } from '@ionic/react';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import '../../pages/pet-missing/PetMissing.css';
 
 interface MapProps {
   onLocationSelect: (lat: number, lng: number, address: string) => void;
-  mapsApiKey?: string; // optional Google Maps Geocoding API key
+  mapsApiKey?: string;
 }
 
-const Map: React.FC<MapProps> = ({ onLocationSelect, mapsApiKey }) => {
+const DEFAULT_CENTER = { lat: 25.542, lng: -103.406 };
 
-  // Reverse geocoding: use Google Geocoding API when mapsApiKey is provided,
-  // otherwise fall back to Nominatim (OpenStreetMap).
-  const fetchAddress = async (lat: number, lng: number): Promise<string> => {
+const mapContainerStyle = { height: '100%', width: '100%' } as const;
+const mapOptions: google.maps.MapOptions = {
+  disableDefaultUI: false,
+  streetViewControl: false,
+  mapTypeControl: false,
+  fullscreenControl: false,
+  zoomControl: true
+};
+
+const Map: React.FC<MapProps> = ({ onLocationSelect, mapsApiKey }) => {
+  const [selectedPosition, setSelectedPosition] = useState<google.maps.LatLngLiteral | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState('');
+
+  const apiKey = mapsApiKey ?? (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined);
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: apiKey ?? '',
+    language: 'es'
+  });
+
+  const fetchAddress = useCallback(async (lat: number, lng: number): Promise<string> => {
     try {
-      if (mapsApiKey) {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${mapsApiKey}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data && data.results && data.results.length > 0) {
-          return data.results[0].formatted_address;
-        }
+      if (apiKey) {
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+        const json = await response.json();
+        if (json?.results?.length) return json.results[0].formatted_address;
         return '';
       }
 
-      // fallback to Nominatim
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-      );
-      const data = await res.json();
-      return data?.display_name || '';
-    } catch (err) {
-      console.warn('Reverse geocode failed', err);
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const json = await response.json();
+      return json?.display_name || '';
+    } catch (error) {
+      console.warn('Reverse geocode failed', error);
       return '';
     }
-  };
+  }, [apiKey]);
 
-  const mapRef = useRef<L.Map | null>(null);
+  const handleMapClick = useCallback(async (event: google.maps.MapMouseEvent) => {
+    const lat = event.latLng?.lat();
+    const lng = event.latLng?.lng();
+    if (lat == null || lng == null) return;
 
-  useEffect(() => {
-    if (mapRef.current) return; // prevent re-init
+    const coords = { lat, lng };
+    setSelectedPosition(coords);
 
-    mapRef.current = L.map('map').setView([25.542, -103.406], 13);
+    const address = await fetchAddress(lat, lng);
+    setSelectedAddress(address);
+    onLocationSelect(lat, lng, address);
+  }, [fetchAddress, onLocationSelect]);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(mapRef.current);
+  const content = useMemo(() => {
+    if (!apiKey) {
+      return (
+        <div className="map-fallback">
+          Falta configurar <code>VITE_GOOGLE_MAPS_API_KEY</code> para mostrar el mapa interactivo.
+        </div>
+      );
+    }
 
-    // Listen for clicks
-    mapRef.current.on('click', async (e: L.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
+    if (loadError) {
+      return (
+        <div className="map-fallback">
+          Error cargando Google Maps: {String(loadError)}
+        </div>
+      );
+    }
 
-      // Get address from API
-      const address = await fetchAddress(lat, lng);
+    if (!isLoaded) {
+      return <div className="map-fallback">Cargando mapa...</div>;
+    }
 
-      // Add marker at clicked location with a popup (address may be empty)
-      L.marker([lat, lng]).addTo(mapRef.current!).bindPopup(address || 'Ubicación').openPopup();
-
-      // Pass coords + address back to parent
-      onLocationSelect(lat, lng, address);
-    });
-  }, [onLocationSelect, mapsApiKey]);
+    return (
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={selectedPosition ?? DEFAULT_CENTER}
+        zoom={13}
+        options={mapOptions}
+        onClick={handleMapClick}
+      >
+        {selectedPosition && (
+          <Marker
+            position={selectedPosition}
+            title={selectedAddress || 'Ubicación seleccionada'}
+          />
+        )}
+      </GoogleMap>
+    );
+  }, [apiKey, handleMapClick, isLoaded, loadError, selectedAddress, selectedPosition]);
 
   return (
     <IonContent fullscreen>
-      <div id="map"></div>
+      <div id="map" style={{ height: '100%', width: '100%' }}>
+        {content}
+      </div>
     </IonContent>
   );
 };

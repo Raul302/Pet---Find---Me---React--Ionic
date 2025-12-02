@@ -5,7 +5,7 @@ import AppHeader from '../../components/Header/AppHeader';
 import './Messages.css';
 import { api_endpoint } from '../../config/api';
 import InitialsCircle from '../../hooks/Helper/FormatedNameBox/NameFormatedBox';
-import { thumbsUp, thumbsUpSharp, closeOutline, sendOutline, receipt, locateOutline, closeCircle } from 'ionicons/icons';
+import { thumbsUp, thumbsUpSharp, closeOutline, sendOutline, receipt, locateOutline, closeCircle, radioOutline } from 'ionicons/icons';
 import { timeAgo } from '../../utils/timeAgo';
 import { useHistory } from 'react-router';
 import { Capacitor } from '@capacitor/core';
@@ -269,8 +269,9 @@ function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinut
                         <IonButton
                             onClick={handleShareLocation}
                             color={"tertiary"} size='small' fill="outline" disabled={isSharing} >
-                            <IonIcon icon={locateOutline} />
-                            &nbsp;{isSharing ? '📡 Compartiendo…' : 'Compartir ubicación'}                    </IonButton>
+                            <IonIcon icon={isSharing ? radioOutline : locateOutline} />
+                            &nbsp;{isSharing ? 'Compartiendo…' : 'Compartir ubicación'}
+                        </IonButton>
                     }
                 </IonButtons>
 

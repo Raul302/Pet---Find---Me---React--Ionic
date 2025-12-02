@@ -51,7 +51,7 @@ import './theme/variables.css';
 import Board from './pages/Board/Board';
 import PetMissing from './pages/pet-missing/PetMissing';
 
-import 'leaflet/dist/leaflet.css';
+// import 'leaflet/dist/leaflet.css';
 import PetsDetail from './pages/PetsDetail/PetsDetail';
 import Profile from './pages/Profile/Profile';
 import QuestionPlace from './pages/Place/QuestionPlace';
@@ -90,7 +90,7 @@ const user = JSON.parse(data_user).id ? JSON.parse(data_user) : null;
     <IonRouterOutlet>
 
       {/* Ruta publica para mostrar mapas */}
-      <Route path="/live/:token" component={LiveLocationViewer} />
+      <Route path="/live/:token" component={Login} />
 
 
       {/* Rutas fuera de las tabs */}
