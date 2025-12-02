@@ -104,6 +104,34 @@ const PetsDetail: React.FC = () => {
 
       if (response.ok) {
         loadCommentsofPost(animal);
+        // Notify the commenter that someone reacted to their comment
+        try {
+          const parsedUser = JSON.parse(data_user || '{}');
+          const parsed = comments.find(c => c.id === commentId) as any;
+          const targetUserId = parsed?.commenterId ?? null;
+          const actorId = parsedUser?.id ?? null;
+          if (targetUserId && actorId && String(targetUserId) !== String(actorId)) {
+            const notifBody = {
+              userId: targetUserId,
+              actorId: actorId,
+              actorName: parsedUser?.fullname ?? parsedUser?.name ?? null,
+              type: 'reaction',
+              title: `${parsedUser?.fullname ?? 'Alguien'} reaccionó a tu comentario`,
+              icon: 'thumbs-up',
+              targetUrl: `/tabs/pets/${animal?.id ?? ''}`
+            };
+            await fetch(`${api_endpoint}/notifications`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(notifBody)
+            }).catch(e => console.warn('Notification create failed', e));
+          }
+        } catch (e) {
+          console.warn('Failed creating like notification', e);
+        }
       }
 
     } catch (error) {
@@ -290,6 +318,32 @@ const handleSendContact = async () => {
     if (resp.ok) {
       setToastMsg('Mensaje Enviado al propietario');
       setToastOpen(true);
+        // Create a notification for the owner
+        try {
+          const parsedUser = JSON.parse(data_user || '{}');
+          const notifBody = {
+            userId: animal?.owner_post ?? null,
+            actorId: parsedUser?.id ?? null,
+            actorName: parsedUser?.fullname ?? parsedUser?.name ?? null,
+            type: 'message',
+            title: `Nuevo mensaje sobre ${animal?.name ?? 'tu publicación'}`,
+            icon: 'chat',
+            targetUrl: `/tabs/messages?petId=${animal?.id ?? ''}`
+          };
+          // Only attempt if we have a target user
+          if (notifBody.userId) {
+            await fetch(`${api_endpoint}/notifications`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(notifBody)
+            }).catch(err => console.warn('Notification create failed', err));
+          }
+        } catch (e) {
+          console.warn('Failed building notification body', e);
+        }
     } else {
       console.warn('Failed to fetch messages, using sample data');
     }
@@ -374,6 +428,33 @@ const handleSendContact = async () => {
       if (response.ok) {
         setNewComment('');
         loadCommentsofPost(animal);
+        // Create a notification for the post owner about the new comment
+        try {
+          const parsedUser = JSON.parse(data_user || '{}');
+          const actorId = parsedUser?.id ?? null;
+          const targetUserId = animal?.owner_post ?? null;
+          if (targetUserId && actorId && String(targetUserId) !== String(actorId)) {
+            const notifBody = {
+              userId: targetUserId,
+              actorId: actorId,
+              actorName: parsedUser?.fullname ?? parsedUser?.name ?? null,
+              type: 'comment',
+              title: `Nuevo comentario en ${animal?.name ?? 'tu publicación'}`,
+              icon: 'comment',
+              targetUrl: `/tabs/pets/${animal?.id ?? ''}`
+            };
+            await fetch(`${api_endpoint}/notifications`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(notifBody)
+            }).catch(e => console.warn('Notification create failed', e));
+          }
+        } catch (e) {
+          console.warn('Failed creating comment notification', e);
+        }
       }
 
     } catch (error) {

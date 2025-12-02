@@ -1,0 +1,66 @@
+{
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 4,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 3,
+  "numPassedTests": 3,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "startTime": 1764698655866,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "App component"
+          ],
+          "fullName": " App component renders without crashing",
+          "status": "passed",
+          "title": "renders without crashing",
+          "duration": 35,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1764698657917,
+      "endTime": 1764698657952,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/luis_/OneDrive/Escritorio/pwa_10A_pethfindme/petfindme/src/App.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PetsDetail flows (Vitest)"
+          ],
+          "fullName": " PetsDetail flows (Vitest) sends contact message and creates notification",
+          "status": "passed",
+          "title": "sends contact message and creates notification",
+          "duration": 225,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PetsDetail flows (Vitest)"
+          ],
+          "fullName": " PetsDetail flows (Vitest) posts a comment and notifies owner",
+          "status": "passed",
+          "title": "posts a comment and notifies owner",
+          "duration": 49,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1764698657930,
+      "endTime": 1764698658204,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/luis_/OneDrive/Escritorio/pwa_10A_pethfindme/petfindme/src/tests/petsDetail.test.tsx"
+    }
+  ]
+}

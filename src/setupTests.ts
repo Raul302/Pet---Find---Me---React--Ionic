@@ -1,14 +1,24 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 
-// Mock matchmedia
-window.matchMedia = window.matchMedia || function() {
-  return {
-      matches: false,
-      addListener: function() {},
-      removeListener: function() {}
-  };
-};
+// Polyfill TextEncoder/TextDecoder for libraries expecting Node globals
+import { TextEncoder, TextDecoder } from 'util';
+if (!(globalThis as any).TextEncoder) {
+  (globalThis as any).TextEncoder = TextEncoder;
+}
+if (!(globalThis as any).TextDecoder) {
+  (globalThis as any).TextDecoder = TextDecoder;
+}
+
+// Lightweight matchMedia mock for components relying on it
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+    onchange: null,
+    media: ''
+  }) as any;
+}
