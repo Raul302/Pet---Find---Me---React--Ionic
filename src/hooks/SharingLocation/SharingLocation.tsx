@@ -1,4 +1,5 @@
-import { io, Socket } from 'socket.io-client';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 let socket: Socket | null = null;
 
@@ -22,7 +23,6 @@ export function startShareLocation(userId: number, durationMinutes: number, shar
     (pos) => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       sock.emit('sendLocation', { userId, coords, shareToken }, () => {
-        console.log('SENDING LOCATION SOCKET', { userId, coords, shareToken });
         // no-op
       });
     },
@@ -30,21 +30,13 @@ export function startShareLocation(userId: number, durationMinutes: number, shar
     { enableHighAccuracy: true }
   );
 
-  const timer = window.setTimeout(() => {
-    try { navigator.geolocation.clearWatch(watchId); } catch (e) { }
-  }, durationMinutes * 60000);
+    const timer = setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId);
+    }, durationMinutes * 60000);
 
-  const stop = () => {
-    try { clearTimeout(timer); } catch (e) { }
-    try { navigator.geolocation.clearWatch(watchId); } catch (e) { }
-  };
-
-  return stop;
-}
-
-export function disconnectSocket() {
-  if (socket) {
-    try { socket.disconnect(); } catch (e) { }
-    socket = null;
-  }
+    return () => {
+      clearTimeout(timer);
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [userId, durationMinutes]);
 }
