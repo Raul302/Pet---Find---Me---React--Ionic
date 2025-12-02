@@ -194,7 +194,7 @@ const Conversation: React.FC = () => {
       },
       body: JSON.stringify({
         userId: user.id,
-        durationMinutes: 30,
+        durationMinutes: 5,
       }),
     });
 
@@ -205,7 +205,7 @@ const Conversation: React.FC = () => {
     }
     // Guardas la fecha de expiración en estado
     setExpiresAt(new Date(data.expiresAt));
-    const message = `Hola, te comparto mi ubicación en tiempo real (30 min): ${data.link}`;
+    const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
 
     if (Capacitor.isNativePlatform()) {
       // 📱 App nativa (Android/iOS)

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io("https://api.lrpm.space", {
+const socket = io("https://lrpm.space", {
     transports: ["websocket"],
 });
 
