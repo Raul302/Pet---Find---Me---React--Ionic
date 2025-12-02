@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { Geolocation } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import { io } from 'socket.io-client';
 
 const socket = io('https://api.lrpm.space', {
@@ -42,7 +42,7 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
       }
     };
 
-    const emitFromPosition = (position: GeolocationPosition | null) => {
+    const emitFromPosition = (position: GeolocationPosition | Position | null) => {
       if (!position || isCancelled) {
         return;
       }

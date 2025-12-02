@@ -8,7 +8,7 @@ import { unregisterPushSubscription, usePushNotifications } from '../../Notifica
 export const AuthContext = createContext<any>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode   }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [pets, setPets] = useState<any[] | null>(null);
   const [selectedPet, setSelectedPet] = useState<any | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
