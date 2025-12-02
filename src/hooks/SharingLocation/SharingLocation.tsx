@@ -10,7 +10,9 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        socket.emit("sendLocation", { userId, coords, shareToken });
+        socket.emit("sendLocation", { userId, coords, shareToken }, () => {
+          console.log('Sending Location');
+        });
       },
       (err) => console.error(err),
       { enableHighAccuracy: true }

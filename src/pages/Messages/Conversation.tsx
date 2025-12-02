@@ -243,10 +243,11 @@ const Conversation: React.FC = () => {
         }
     }, [expiresAt]);
 
-    if (isSharing && shareToken) {
-        const user = JSON.parse(localStorage.getItem('data_user') || '{}');
-        useShareLocation(user.id, 5, shareToken);
-    }
+function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinutes: number, shareToken: string }) {
+    const user = localStorage.getItem('data_user') ? JSON.parse(localStorage.getItem('data_user') || '{}') : null;
+    useShareLocation(user.id, durationMinutes, shareToken);
+  return null; // no renderiza nada, solo activa el hook
+}
 
 
     return (
@@ -271,6 +272,11 @@ const Conversation: React.FC = () => {
                             &nbsp;{isSharing ? '📡 Compartiendo…' : 'Compartir ubicación'}                    </IonButton>
                     }
                 </IonButtons>
+
+                    {/* Montamos el hook solo mientras está compartiendo */}
+                    {isSharing && shareToken && (
+                        <ShareLocationSession  durationMinutes={5} shareToken={shareToken} />
+                    )}
 
                 <IonModal isOpen={showRateModal} onDidDismiss={() => setShowRateModal(false)} className="rate-modal">
                     <IonHeader>

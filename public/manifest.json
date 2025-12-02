@@ -3,12 +3,18 @@
   "name": "Pet Find Me",
   "icons": [
     {
-      "src": "assets/icon/favicon.png",
+      "src": "/favicon_pet_find_me/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
+     {
+      "src": "/favicon_pet_find_me/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    
     {
-      "src": "assets/icon/icon.png",
+      "src": "/favicon_pet_find_me/android-chrome-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -19,3 +25,4 @@
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
 }
+
