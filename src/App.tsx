@@ -90,7 +90,7 @@ const user = JSON.parse(data_user).id ? JSON.parse(data_user) : null;
     <IonRouterOutlet>
 
       {/* Ruta publica para mostrar mapas */}
-      <Route path="/live/:token" component={Login} />
+      <Route path="/live/:token" component={LiveLocationViewer} />
 
 
       {/* Rutas fuera de las tabs */}
