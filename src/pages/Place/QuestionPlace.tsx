@@ -10,7 +10,7 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import './QuestionPlace.css';
 import { Geolocation } from '@capacitor/geolocation';
 import { mapsApiKey } from '../../assets/DontBackup/Credentials';
@@ -20,6 +20,7 @@ import api, { api_endpoint } from '../../config/api';
 
 import { Capacitor } from '@capacitor/core';
 import { useHistory } from 'react-router';
+import { AuthContext } from '../../hooks/Context/AuthContext/AuthContext';
 
 const QuestionPlace: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -34,6 +35,7 @@ const QuestionPlace: React.FC = () => {
   const searchTimeout = useRef<number | null>(null);
   const queryRef = useRef(query);
   const [submitting, setSubmitting] = useState(false);
+  const { updateUser } = useContext(AuthContext) as any;
 
   const [address,address_formated] = useState('');
 
@@ -265,19 +267,8 @@ const SearchLocation = (q: string) => {
       };
 
       // NOTE: adjust endpoint to your backend. Current default: `${api_endpoint}/location/update`
-      const resp = await fetch(`${api_endpoint}/auth/users/update`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!resp.ok) {
-        const txt = await resp.text();
-        throw new Error(txt || `HTTP ${resp.status}`);
-      }
+     
+        await updateUser?.(payload, true);
 
       setToastMsg('Dirección enviada correctamente.');
       setToastOpen(true);

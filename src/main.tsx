@@ -18,9 +18,11 @@ defineCustomElements(window);
 // Service workers
 const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm("Hay una nueva versión disponible. ¿Quieres actualizar?")) {
-      updateSW(true); 
-    }
+    alert("Nueva versión disponible, actualizando...");
+    updateSW(true);
+    // if (confirm("Hay una nueva versión disponible. ¿Quieres actualizar?")) {
+    //   updateSW(true); 
+    // }
     console.log("PROBADO AUTOUPDATE SERVICE WORKERS");
   },
   onOfflineReady() {
