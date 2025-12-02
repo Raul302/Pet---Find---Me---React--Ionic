@@ -10,6 +10,7 @@ import { timeAgo } from '../../utils/timeAgo';
 import { useHistory } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
+import { useShareLocation } from '../../hooks/SharingLocation/SharingLocation';
 
 const makeThread = (id: string) => {
     // Simple fake thread based on id for preview
@@ -26,6 +27,9 @@ const Conversation: React.FC = () => {
     const { fetchConversationsByPet, selectedConversation, setSelectedConversation } = useContext(AuthContext) as any;
 
     console.log('selectedConversation', selectedConversation);
+    const [isSharing, setIsSharing] = useState(false);
+    const [shareToken, setShareToken] = useState<string | null>(null);
+    const [expiresAt, setExpiresAt] = useState<Date | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [conversation, setConversation] = useState<any[]>([]);
@@ -34,7 +38,6 @@ const Conversation: React.FC = () => {
     const [toastMsg, setToastMsg] = useState('');
     const [toastOpen, setToastOpen] = useState(false);
     const [showRateModal, setShowRateModal] = useState(false);
-    const [expiresAt, setExpiresAt] = useState<Date | null>(null);
 
     const isExpired = expiresAt && new Date() > expiresAt;
 
@@ -157,7 +160,7 @@ const Conversation: React.FC = () => {
         setToastMsg(msg);
         setToastOpen(true);
         setShowRateModal(false);
-        try { setSelectedConversation?.(null); } catch (err) {}
+        try { setSelectedConversation?.(null); } catch (err) { }
         history.push('/tabs/messages');
         // TODO: send rating to backend if you have an endpoint
     };
@@ -176,55 +179,75 @@ const Conversation: React.FC = () => {
 
     // ============================================= SHARING LOCATION SCOKETS =================================================
 
- const handleShareLocation = async () => {
-  try {
-    const token = localStorage.getItem('accessToken') || '';
-    const user = JSON.parse(localStorage.getItem('data_user') || '{}');
+    const handleShareLocation = async () => {
+        try {
+            const token = localStorage.getItem('accessToken') || '';
+            const user = JSON.parse(localStorage.getItem('data_user') || '{}');
 
-    if (!user?.id || !token) {
-      alert('Inicia sesión para compartir ubicación.');
-      return;
+            if (!user?.id || !token) {
+                alert('Inicia sesión para compartir ubicación.');
+                return;
+            }
+
+            const resp = await fetch(`${api_endpoint}/live-location/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    durationMinutes: 5,
+                    coords: user.coords || null,
+                }),
+            });
+
+            const data = await resp.json();
+            if (!resp.ok || !data?.link) {
+                alert('No se pudo generar el link de ubicación.');
+                return;
+            }
+            setIsSharing(true);
+            setExpiresAt(new Date(data.expiresAt));
+            setShareToken(data.shareToken);
+            const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
+
+            if (Capacitor.isNativePlatform()) {
+                // 📱 App nativa (Android/iOS)
+                await Share.share({
+                    title: 'Ubicación en tiempo real',
+                    text: message,
+                    url: data.link,
+                });
+            } else {
+                // 💻 Navegador web
+                const encoded = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/?text=${encoded}`;
+                window.open(whatsappUrl, '_blank');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al compartir ubicación.');
+        }
+    };
+
+    useEffect(() => {
+        if (expiresAt) {
+            const timer = setTimeout(() => {
+                setIsSharing(false);
+                setShareToken(null);
+                setExpiresAt(null);
+            }, expiresAt.getTime() - Date.now());
+
+            return () => clearTimeout(timer);
+        }
+    }, [expiresAt]);
+
+    if (isSharing && shareToken) {
+        const user = JSON.parse(localStorage.getItem('data_user') || '{}');
+        useShareLocation(user.id, 5, shareToken);
     }
 
-    const resp = await fetch(`${api_endpoint}/live-location/start`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId: user.id,
-        durationMinutes: 5,
-      }),
-    });
-
-    const data = await resp.json();
-    if (!resp.ok || !data?.link) {
-      alert('No se pudo generar el link de ubicación.');
-      return;
-    }
-    // Guardas la fecha de expiración en estado
-    setExpiresAt(new Date(data.expiresAt));
-    const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
-
-    if (Capacitor.isNativePlatform()) {
-      // 📱 App nativa (Android/iOS)
-      await Share.share({
-        title: 'Ubicación en tiempo real',
-        text: message,
-        url: data.link,
-      });
-    } else {
-      // 💻 Navegador web
-      const encoded = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/?text=${encoded}`;
-      window.open(whatsappUrl, '_blank');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Error al compartir ubicación.');
-  }
-};
 
     return (
         <IonPage>
@@ -233,23 +256,22 @@ const Conversation: React.FC = () => {
                 <IonButton onClick={() => history.push('/tabs/messages')} slot="start">Atrás</IonButton>
                 <IonTitle style={{ textAlign: 'center' }}>{selectedConversation?.pet?.name ?? 'Conversación'}</IonTitle>
                 <IonButtons slot="end">
-                    { isExpired ?
-                      <IonButton 
-                    onClick={handleOpenRateModal}
-                    color={"tertiary"} size='small' fill="outline"  >
-                        <IonIcon icon={closeCircle} />
-                        &nbsp;Cerrar y valorar
-                    </IonButton>
-                    :
-                    <IonButton 
-                    onClick={handleShareLocation}
-                    color={"tertiary"} size='small' fill="outline"  >
-                        <IonIcon icon={locateOutline} />
-                        &nbsp;Compartir ubicación
-                    </IonButton>
+                    {isExpired ?
+                        <IonButton
+                            onClick={handleOpenRateModal}
+                            color={"tertiary"} size='small' fill="outline"  >
+                            <IonIcon icon={closeCircle} />
+                            &nbsp;Cerrar y valorar
+                        </IonButton>
+                        :
+                        <IonButton
+                            onClick={handleShareLocation}
+                            color={"tertiary"} size='small' fill="outline" disabled={isSharing} >
+                            <IonIcon icon={locateOutline} />
+                            &nbsp;{isSharing ? '📡 Compartiendo…' : 'Compartir ubicación'}                    </IonButton>
                     }
                 </IonButtons>
-                
+
                 <IonModal isOpen={showRateModal} onDidDismiss={() => setShowRateModal(false)} className="rate-modal">
                     <IonHeader>
                         <IonToolbar>

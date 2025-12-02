@@ -8,13 +8,12 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'  
 
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     legacy(),
     VitePWA({
-      registerType: 'autoUpdate', // Actualziacion automaticas SW -2
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'PetFindMe',
@@ -39,6 +38,15 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',

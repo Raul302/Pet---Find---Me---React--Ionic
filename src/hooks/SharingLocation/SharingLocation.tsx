@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io("https://lrpm.space", {
+const socket = io("https://api.lrpm.space", {
     transports: ["websocket"],
 });
 
-export function useShareLocation(userId: number, durationMinutes: number) {
-  useEffect(() => {
+export function useShareLocation(userId: number, durationMinutes: number, shareToken: string) {
+    useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        socket.emit("sendLocation", { userId, coords });
+        socket.emit("sendLocation", { userId, coords, shareToken });
       },
       (err) => console.error(err),
       { enableHighAccuracy: true }
