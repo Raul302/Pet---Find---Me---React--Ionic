@@ -35,8 +35,13 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        cacheId: "v5",  
+        cleanupOutdatedCaches: true
       }
     })
+    
   ],
   build: {
     rollupOptions: {

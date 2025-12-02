@@ -298,10 +298,10 @@ const Board: React.FC = () => {
 
                         </IonCol>
                         <IonCol style={{ display: 'flex', justifyContent: 'right', alignItems: 'center', textAlign: 'center' }} size='6'>
-                          <IonIcon style={{ color: '#46b1ff ' }} size='micro' icon={chatbubble} />
+                          {/* <IonIcon style={{ color: '#46b1ff ' }} size='micro' icon={chatbubble} />
                           <IonText >
                             <span style={{ color: '#46b1ff ', fontSize: 10 }} >46</span>
-                          </IonText>
+                          </IonText> */}
                         </IonCol>
 
                       </IonRow>

@@ -57,6 +57,12 @@ const Conversation: React.FC = () => {
             useful: false
         };
 
+        const targetUrl = selectedConversation?.conversationId
+            ? `/tabs/messages/conversation?conversationId=${selectedConversation.conversationId}`
+            : selectedConversation?.petId
+                ? `/tabs/messages/conversation?petId=${selectedConversation.petId}`
+                : '/tabs/messages/conversation';
+
         const formData = new FormData();
 
         // Agregar campos simples
@@ -74,11 +80,38 @@ const Conversation: React.FC = () => {
         setConversation(prev => [...prev, msg]);
         setNewMessage('');
         try {
-            await fetch(`${api_endpoint}/direct-messages`, {
+            const dmResponse = await fetch(`${api_endpoint}/direct-messages`, {
                 method: 'POST',
                 headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: formData
             });
+
+            if (!dmResponse.ok) {
+                console.warn('Direct message request failed', dmResponse.status);
+            }
+
+            if (msg.recipientId) {
+                try {
+                    await fetch(`${api_endpoint}/notifications`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify({
+                            userId: msg.recipientId,
+                            actorId: msg.senderId,
+                            actorName: msg.senderName,
+                            type: 'sent you a message',
+                            title: 'Nuevo mensaje',
+                            icon: 'chatbubbles-outline',
+                            targetUrl
+                        })
+                    });
+                } catch (notificationErr) {
+                    console.warn('Failed to trigger push notification', notificationErr);
+                }
+            }
         } catch (err) {
             console.warn('Failed to send message', err);
         }
@@ -212,18 +245,31 @@ const Conversation: React.FC = () => {
             setShareToken(data.shareToken);
             const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
 
-            if (Capacitor.isNativePlatform()) {
-                // 📱 App nativa (Android/iOS)
-                await Share.share({
-                    title: 'Ubicación en tiempo real',
-                    text: message,
-                    url: data.link,
-                });
-            } else {
-                // 💻 Navegador web
+            const shareOnWeb = () => {
                 const encoded = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/?text=${encoded}`;
-                window.open(whatsappUrl, '_blank');
+                window.location.assign(whatsappUrl);
+            };
+
+            try {
+                if (Capacitor.isNativePlatform()) {
+                    await Share.share({
+                        title: 'Ubicación en tiempo real',
+                        text: message,
+                        url: data.link,
+                    });
+                } else if ('share' in navigator) {
+                    await (navigator as Navigator & { share: (data: ShareData) => Promise<void> }).share({
+                        title: 'Ubicación en tiempo real',
+                        text: message,
+                        url: data.link,
+                    });
+                } else {
+                    shareOnWeb();
+                }
+            } catch (err) {
+                console.warn('Share failed, falling back to WhatsApp link', err);
+                shareOnWeb();
             }
         } catch (err) {
             console.error(err);
@@ -245,8 +291,9 @@ const Conversation: React.FC = () => {
 
 function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinutes: number, shareToken: string }) {
     console.log('SHARELOCATIONSESSION CALLED IN CONVERSATION.TSX');
-    const user = localStorage.getItem('data_user') ? JSON.parse(localStorage.getItem('data_user') || '{}') : null;
-    useShareLocation(user.id, durationMinutes, shareToken);
+        const user = localStorage.getItem('data_user') ? JSON.parse(localStorage.getItem('data_user') || '{}') : null;
+        const userId = Number(user?.id ?? 0);
+        useShareLocation(userId, durationMinutes, shareToken);
   return null; // no renderiza nada, solo activa el hook
 }
 

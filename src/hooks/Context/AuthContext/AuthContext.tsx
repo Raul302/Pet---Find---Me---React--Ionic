@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { api_endpoint } from '../../../config/api';
+import { unregisterPushSubscription, usePushNotifications } from '../../Notifications/usePushNotifications';
 
 
 export const AuthContext = createContext<any>(null);
@@ -15,6 +16,8 @@ export function AuthProvider({ children }: { children: React.ReactNode   }) {
   const [petsError, setPetsError] = useState<string | null>(null);
   
   const history = useHistory();
+
+  usePushNotifications(user?.id ?? null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('data_user');
@@ -31,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode   }) {
   }, []);
 
   const logout = () => {
+    void unregisterPushSubscription();
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('data_user');
