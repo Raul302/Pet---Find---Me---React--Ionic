@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
 
@@ -38,5 +38,4 @@ export function startShareLocation(userId: number, durationMinutes: number, shar
       clearTimeout(timer);
       navigator.geolocation.clearWatch(watchId);
     };
-  }, [userId, durationMinutes]);
 }
