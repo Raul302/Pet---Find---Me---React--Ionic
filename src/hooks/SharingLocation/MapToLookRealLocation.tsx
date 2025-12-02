@@ -16,8 +16,8 @@ L.Icon.Default.mergeOptions({
 });
 
 // Conexión al servidor WebSocket
-const socket = io("http://localhost:3000", {
-  transports: ["websocket"],
+const socket = io("https://api.lrpm.space", {
+    transports: ["websocket"],
 });
 
 // Log de conexión para verificar que el cliente se conecta
