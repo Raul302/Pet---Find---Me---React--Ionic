@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useContext, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../../hooks/Context/AuthContext/AuthContext';
 import { IonPage, IonContent, IonButton, IonToolbar, IonTitle, IonAvatar, IonIcon, IonModal, IonHeader, IonButtons, IonTextarea, IonText, IonToast } from '@ionic/react';
 import AppHeader from '../../components/Header/AppHeader';
@@ -10,7 +10,7 @@ import { timeAgo } from '../../utils/timeAgo';
 import { useHistory } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
-import { startShareLocation } from '../../hooks/SharingLocation/SharingLocation';
+import { useShareLocation } from '../../hooks/SharingLocation/SharingLocation';
 
 const makeThread = (id: string) => {
     // Simple fake thread based on id for preview
@@ -30,7 +30,6 @@ const Conversation: React.FC = () => {
     const [isSharing, setIsSharing] = useState(false);
     const [shareToken, setShareToken] = useState<string | null>(null);
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
-    const stopRef = useRef<null | (() => void)>(null);
 
     const [loading, setLoading] = useState(true);
     const [conversation, setConversation] = useState<any[]>([]);
@@ -211,12 +210,6 @@ const Conversation: React.FC = () => {
             setIsSharing(true);
             setExpiresAt(new Date(data.expiresAt));
             setShareToken(data.shareToken);
-            // start sending coordinates to the server
-            try {
-                stopRef.current = startShareLocation(user.id, 5, data.shareToken);
-            } catch (e) {
-                console.warn('Failed to start sharing', e);
-            }
             const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
 
             if (Capacitor.isNativePlatform()) {
@@ -241,7 +234,6 @@ const Conversation: React.FC = () => {
     useEffect(() => {
         if (expiresAt) {
             const timer = setTimeout(() => {
-                try { if (stopRef.current) { stopRef.current(); stopRef.current = null; } } catch (e) { }
                 setIsSharing(false);
                 setShareToken(null);
                 setExpiresAt(null);
@@ -251,19 +243,12 @@ const Conversation: React.FC = () => {
         }
     }, [expiresAt]);
 
-    const handleStopShare = () => {
-        try {
-            if (stopRef.current) {
-                stopRef.current();
-                stopRef.current = null;
-            }
-        } catch (e) { }
-        setIsSharing(false);
-        setShareToken(null);
-        setExpiresAt(null);
-        // optionally disconnect socket if you want
-        // disconnectSocket();
-    };
+function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinutes: number, shareToken: string }) {
+    console.log('SHARELOCATIONSESSION CALLED IN CONVERSATION.TSX');
+    const user = localStorage.getItem('data_user') ? JSON.parse(localStorage.getItem('data_user') || '{}') : null;
+    useShareLocation(user.id, durationMinutes, shareToken);
+  return null; // no renderiza nada, solo activa el hook
+}
 
 
     return (
@@ -273,23 +258,26 @@ const Conversation: React.FC = () => {
                 <IonButton onClick={() => history.push('/tabs/messages')} slot="start">Atrás</IonButton>
                 <IonTitle style={{ textAlign: 'center' }}>{selectedConversation?.pet?.name ?? 'Conversación'}</IonTitle>
                 <IonButtons slot="end">
-                    {isExpired ? (
-                        <IonButton onClick={handleOpenRateModal} color={"tertiary"} size='small' fill="outline">
+                    {isExpired ?
+                        <IonButton
+                            onClick={handleOpenRateModal}
+                            color={"tertiary"} size='small' fill="outline"  >
                             <IonIcon icon={closeCircle} />
                             &nbsp;Cerrar y valorar
                         </IonButton>
-                    ) : (
+                        :
                         <IonButton
-                            onClick={() => (isSharing ? handleStopShare() : handleShareLocation())}
-                            color={"tertiary"}
-                            size='small'
-                            fill="outline"
-                        >
+                            onClick={handleShareLocation}
+                            color={"tertiary"} size='small' fill="outline" disabled={isSharing} >
                             <IonIcon icon={locateOutline} />
-                            &nbsp;{isSharing ? 'Dejar de compartir' : 'Compartir ubicación'}
-                        </IonButton>
-                    )}
+                            &nbsp;{isSharing ? '📡 Compartiendo…' : 'Compartir ubicación'}                    </IonButton>
+                    }
                 </IonButtons>
+
+                    {/* Montamos el hook solo mientras está compartiendo */}
+                    {isSharing && shareToken && (
+                        <ShareLocationSession  durationMinutes={5} shareToken={shareToken} />
+                    )}
 
                 <IonModal isOpen={showRateModal} onDidDismiss={() => setShowRateModal(false)} className="rate-modal">
                     <IonHeader>
