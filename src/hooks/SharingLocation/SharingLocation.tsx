@@ -22,6 +22,7 @@ export function startShareLocation(userId: number, durationMinutes: number, shar
     (pos) => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       sock.emit('sendLocation', { userId, coords, shareToken }, () => {
+        console.log('SENDING LOCATION SOCKET', { userId, coords, shareToken });
         // no-op
       });
     },
