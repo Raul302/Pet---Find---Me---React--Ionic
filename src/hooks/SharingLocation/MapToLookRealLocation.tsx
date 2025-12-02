@@ -30,7 +30,7 @@ export function LiveLocationViewer() {
 
   useEffect(() => {
     socket.on("updateLocation", (data) => {
-      console.log("Ubicación recibida:", data); // 👈 log para verificar datos
+      console.log("Ubicación recibida:", data);
       setLocations((prev) => {
         const filtered = prev.filter(l => l.userId !== data.userId);
         return [...filtered, data];

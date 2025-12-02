@@ -1,49 +1,30 @@
-import { io, Socket } from 'socket.io-client';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
 
-let socket: Socket | null = null;
+const socket = io("https://api.lrpm.space", {
+    transports: ["websocket"],
+});
 
-function getSocket() {
-  if (!socket) {
-    socket = io('https://api.lrpm.space', { transports: ['websocket'] });
-  }
-  return socket;
-}
+export function useShareLocation(userId: number, durationMinutes: number, shareToken: string) {
+    useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        socket.emit("sendLocation", { userId, coords, shareToken }, () => {
+          console.log('Sending Location');
+        });
+      },
+      (err) => console.error(err),
+      { enableHighAccuracy: true }
+    );
 
-type StopFn = () => void;
+    const timer = setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId);
+    }, durationMinutes * 60000);
 
-/**
- * Start sharing location imperatively. Returns a stop function.
- * This avoids calling hooks from event handlers and gives explicit control.
- */
-export function startShareLocation(userId: number, durationMinutes: number, shareToken: string): StopFn {
-  const sock = getSocket();
-
-  const watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      sock.emit('sendLocation', { userId, coords, shareToken }, () => {
-        // no-op
-      });
-    },
-    (err) => console.error('geo err', err),
-    { enableHighAccuracy: true }
-  );
-
-  const timer = window.setTimeout(() => {
-    try { navigator.geolocation.clearWatch(watchId); } catch (e) { }
-  }, durationMinutes * 60000);
-
-  const stop = () => {
-    try { clearTimeout(timer); } catch (e) { }
-    try { navigator.geolocation.clearWatch(watchId); } catch (e) { }
-  };
-
-  return stop;
-}
-
-export function disconnectSocket() {
-  if (socket) {
-    try { socket.disconnect(); } catch (e) { }
-    socket = null;
-  }
+    return () => {
+      clearTimeout(timer);
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [userId, durationMinutes]);
 }
