@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonImg, IonInput, IonItem, IonList, IonPage, IonRow, IonSelect, IonSelectOption, IonText, IonTextarea, IonTitle, IonToolbar, IonButton, IonLabel, useIonViewWillLeave } from '@ionic/react';
 import { IonToast } from '@ionic/react';
 import './PetMissing.css';
@@ -8,6 +8,7 @@ import { usePhotoGallery } from '../../hooks/Gallery/UsePhotoGallery';
 import Map from '../../components/Map/Map'
 import { mapsApiKey } from '../../assets/DontBackup/Credentials';
 import api, { api_endpoint } from '../../config/api';
+import { AuthContext } from '../../hooks/Context/AuthContext/AuthContext';
 
 
 const PetMissing: React.FC = () => {
@@ -30,6 +31,11 @@ const PetMissing: React.FC = () => {
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<any[]>([]);
   const [selected, setSelected] = useState('');
+
+
+
+  // ========================== AuthContext ==========================
+  const { fetchPets } = useContext(AuthContext);
 
   let timeout: NodeJS.Timeout;
   const SearchLocation = (e: string) => {
@@ -177,6 +183,8 @@ const PetMissing: React.FC = () => {
 
       setToastMsg('Reporte publicado correctamente');
       setToastOpen(true);
+
+      fetchPets();
       setName(''); setDescription(''); setKeywords([]); setQuery(''); setCoordsState(null);
       // clear local photos after successful submit
       try { if (clearPhotos) await clearPhotos(); } catch (e) { console.warn('clearPhotos after submit', e); }

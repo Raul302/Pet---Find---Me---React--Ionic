@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Conexión al servidor WebSocket
-const socket = io("https://api.lrpm.space", {
+const socket = io("https://lrpm.space", {
     transports: ["websocket"],
 });
 
