@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 
 const socket = io("https://api.lrpm.space", {
-    transports: ["websocket"],
+  transports: ["websocket", "polling"]});
+
+
+socket.on("connect_error", (err) => {
+  console.error("Socket connection error:", err.message);
 });
 
 export function useShareLocation(userId: number, durationMinutes: number, shareToken: string) {
@@ -12,7 +16,7 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        socket.emit("sendLocation", { userId, coords, shareToken } );
+        console.log("sendLocation", { userId, coords, shareToken } );
       },
       (err) => console.error(err),
       { enableHighAccuracy: true }
