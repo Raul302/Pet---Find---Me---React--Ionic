@@ -37,10 +37,13 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: "v2.1_petfindme_cache",  
+        cacheId: "v3s.1_petfindme_cache",  
         cleanupOutdatedCaches: true
-      }
-    })
+      },
+      srcDir: 'src',
+  filename: 'sw.ts'
+    }),
+    
     
   ],
   build: {
@@ -52,6 +55,7 @@ export default defineConfig({
       }
     }
   },
+  
   test: {
     globals: true,
     environment: 'jsdom',

@@ -1,4 +1,7 @@
+
+
 /// <reference lib="webworker" />
+
 
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
@@ -7,6 +10,14 @@ declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<any>;
 };
 
+// ================== CACHE / OFFLINE ==================
+self.skipWaiting();
+clientsClaim();
+
+cleanupOutdatedCaches();
+precacheAndRoute(self.__WB_MANIFEST || []);
+
+// ================== NOTIFICACIONES CUSTOM ==================
 type NotificationPayload = {
   notificationId?: number;
   title?: string;
@@ -20,20 +31,14 @@ type NotificationPayload = {
 
 const DEFAULT_TITLE = 'PetFindMe';
 const DEFAULT_ICON = 'favicon.png';
-const DEFAULT_BODY = 'Tienes una nueva notificacion';
-
-self.skipWaiting();
-clientsClaim();
-
-cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST || []);
+const DEFAULT_BODY = 'Tienes una nueva notificación';
 
 const buildPayload = (input: unknown): NotificationPayload => {
   if (!input) return {};
   if (typeof input === 'string') {
     try {
       return JSON.parse(input) as NotificationPayload;
-    } catch (err) {
+    } catch {
       return { body: input };
     }
   }
@@ -59,12 +64,13 @@ const showNotification = async (payload: NotificationPayload) => {
   await self.registration.showNotification(title, options);
 };
 
+// Listener genérico de Push (útil si backend envía payload JSON directo)
 self.addEventListener('push', event => {
   if (!event.data) return;
   const raw = (() => {
     try {
       return event.data?.json();
-    } catch (err) {
+    } catch {
       return event.data?.text();
     }
   })();
@@ -73,6 +79,7 @@ self.addEventListener('push', event => {
   event.waitUntil(showNotification(payload));
 });
 
+// Click en notificación → abrir ventana
 self.addEventListener('notificationclick', event => {
   const notification = event.notification;
   const targetUrl = (notification.data && (notification.data as any).url) || '/';
@@ -101,6 +108,35 @@ self.addEventListener('notificationclick', event => {
       }
     })()
   );
+});
+
+// ================== FIREBASE MESSAGING ==================
+importScripts("https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/9.6.11/firebase-messaging-compat.js");
+
+declare var firebase: any;
+
+firebase.initializeApp({
+   apiKey: "AIzaSyBz-7zob3ucnp_kSh_yV9RxF9kBfbPC93o",
+  authDomain: "pet-find-m.firebaseapp.com",
+  projectId: "pet-find-m",
+  storageBucket: "pet-find-m.firebasestorage.app",
+  messagingSenderId: "364370916980",
+  appId: "1:364370916980:web:4337c1cdbb943957790321",
+  measurementId: "G-HW82RQ40QK"
+});
+
+const messaging = firebase.messaging();
+
+// Notificaciones en background vía FCM
+messaging.onBackgroundMessage((payload: any) => {
+  console.log("[sw.ts] Mensaje en background:", payload);
+  const { title, body } = payload.notification || {};
+  self.registration.showNotification(title || DEFAULT_TITLE, {
+    body: body || DEFAULT_BODY,
+    icon: DEFAULT_ICON,
+    data: payload.data || {}
+  });
 });
 
 export {};
