@@ -35,47 +35,62 @@ export function LiveLocationViewer() {
   }, [token]);
 
   // B: Fetch inicial para centrar el mapa
-  useEffect(() => {
-    if (!token) return;
-    const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
-    fetch(`${apiEndpoint}/live-location/${token}`)
-      .then(async (resp) => {
-        if (!resp.ok) return;
-        const data = await resp.json();
-        const coords = data?.coords;
-        if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
-          setCenter({ lat: Number(coords.lat), lng: Number(coords.lng) });
-        }
-      })
-      .catch(() => {});
-  }, [token]);
+useEffect(() => {
+  if (!token) return;
+  const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
+  fetch(`${apiEndpoint}/live-location/${token}`)
+    .then(async (resp) => {
+      if (!resp.ok) {
+        // Manejar expiración
+        console.warn('Ubicación expirada o no encontrada');
+        setCenter(null); // no hay centro válido
+        alert('Esta ubicación ya expiró'); // o mostrar un mensaje en UI
+        return;
+      }
+      const data = await resp.json();
+      const coords = data?.coords;
+      if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+        setCenter({ lat: Number(coords.lat), lng: Number(coords.lng) });
+      }
+    })
+    .catch(() => {});
+}, [token]);
 
-  // C: Escuchar actualizaciones del socket filtradas por token
-  useEffect(() => {
-    const listener = (data: any) => {
-      if (data?.shareToken !== token) return;
+ // C: Escuchar actualizaciones del socket filtradas por token
+useEffect(() => {
+  const listener = (data: any) => {
+    if (data?.shareToken !== token) return;
 
-      const lat = Number(data?.coords?.lat);
-      const lng = Number(data?.coords?.lng);
-      const userId = String(data?.userId ?? '');
+    // Log para verificar qué llega del backend
+    console.log('Raw coords recibidas:', data.coords);
 
-      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !userId) return;
+    const lat = Number(data?.coords?.lat ?? data?.coords?.latitude);
+    const lng = Number(data?.coords?.lng ?? data?.coords?.longitude);
+    const userId = String(data?.userId ?? '');
 
-      const normalized: LiveLocation = { userId, coords: { lat, lng } };
+    console.log('Parsed coords -> lat:', lat, 'lng:', lng);
 
-      setLocations(prev => {
-        const filtered = prev.filter(loc => loc.userId !== normalized.userId);
-        return [...filtered, normalized];
-      });
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !userId) {
+      console.warn('Coordenadas inválidas recibidas, se ignoran');
+      return;
+    }
 
-      setCenter({ lat, lng });
-    };
+    const normalized: LiveLocation = { userId, coords: { lat, lng } };
 
-    socket.on('updateLocation', listener);
-    return () => {
-      socket.off('updateLocation', listener);
-    };
-  }, [token]);
+    setLocations(prev => {
+      const filtered = prev.filter(loc => loc.userId !== normalized.userId);
+      return [...filtered, normalized];
+    });
+
+    setCenter({ lat, lng });
+  };
+
+  socket.on('updateLocation', listener);
+  return () => {
+    socket.off('updateLocation', listener);
+  };
+}, [token]);
+
 
   // D: PanTo cuando haya center
   useEffect(() => {
