@@ -93,7 +93,7 @@ const data_user = localStorage.getItem('data_user') || '{}';
 
   const { user } = useContext(AuthContext);
   useEffect(() => { 
-  if (user) {
+  if (user && user.id) {
     const alreadySent = localStorage.getItem('fcmTokenSent');
     if (!alreadySent) {
       initFCM().then(() => {
@@ -156,7 +156,7 @@ const data_user = localStorage.getItem('data_user') || '{}';
         headers: { "Content-Type": "application/json",
           'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
          },
-        body: JSON.stringify({ token })
+        body: JSON.stringify({token, userId: user.id  })
       });
     } catch (err) {
       console.error("Error inicializando FCM:", err);
