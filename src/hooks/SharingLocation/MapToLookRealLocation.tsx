@@ -38,7 +38,7 @@ export function LiveLocationViewer() {
 useEffect(() => {
   if (!token) return;
   const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
-  fetch(`${apiEndpoint}/live-location/${token}`)
+  fetch(`${apiEndpoint}/api/live-location/${token}`)
     .then(async (resp) => {
       if (!resp.ok) {
         // Manejar expiración
