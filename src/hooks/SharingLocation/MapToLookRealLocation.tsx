@@ -40,6 +40,8 @@ useEffect(() => {
   const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
   fetch(`${apiEndpoint}/api/live-location/${token}`)
     .then(async (resp) => {
+
+      console.log('Fetch inicial live-location resp', resp);
       if (!resp.ok) {
         // Manejar expiración
         console.warn('Ubicación expirada o no encontrada');
