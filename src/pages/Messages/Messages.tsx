@@ -22,6 +22,13 @@ interface Message {
   pet?: {
     name?: string;
   };
+  participants?: Array<{
+    id: number;
+    fullname?: string;
+  }>;
+  lastMessage?: {
+    content?: string;
+  };
 }
 
 
@@ -49,7 +56,7 @@ const Messages: React.FC = () => {
     const user = JSON.parse(data_user);
     setLoading(true);
       try { 
-        const resp = await fetch(`${api_endpoint}/direct-messages/${user.id}`, {
+        const resp = await fetch(`${api_endpoint}/conversations/user/${user.id}`, {
           method: 'GET',
           headers: { 
             'Content-Type': 'application/json' ,
@@ -58,6 +65,7 @@ const Messages: React.FC = () => {
         });
         const data = await resp.json().catch(() => ([]));   
         if (resp.ok) {
+          console.log('Conversations',data);
             setMessages(data);  
         } else {
             console.warn('Failed to fetch messages, using sample data');
@@ -79,10 +87,49 @@ const Messages: React.FC = () => {
   const { setSelectedConversation } = useContext(AuthContext) as any;
 
   const openConversation = (msg: Message) => {
-    setSelectedConversation?.(msg);
-    history.push('/tabs/messages/conversation');
+
+// router.get('/:conversationId/messages', conversationController.getConversationMessages);
+
+fetch(`${api_endpoint}/conversations/${msg.id}/messages`, {
+  method: 'GET',
+  headers: { 
+    'Content-Type': 'application/json' ,
+      'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+}
+})
+.then(res => res.json())
+.then(data => {
+  setSelectedConversation?.({ ...msg, messages: data });
+  history.push('/tabs/messages/conversation');
+})
+.catch(err => {
+  console.error('Error fetching conversation messages:', err);
+});
+
+
   }
 
+
+  const loadRecipient = (msg: Message) => {
+    const data_user = localStorage.getItem('data_user') || '{}';
+    const user = JSON.parse(data_user);
+
+    console.log('MAP',msg);
+
+      if(msg.participants){
+        for(const p of msg.participants){
+          if(p.id !== user.id){
+            return p.fullname || 'Usuario';
+          }
+      //  msg.participants.foreach((p:any) => {
+      //     if(p.id !== user.id){
+      //       return p.fullname || 'Usuario';
+      //     }
+      }
+    }
+
+
+  }
 
   return (
     <IonPage>
@@ -111,21 +158,33 @@ const Messages: React.FC = () => {
               >
                 <div style={{ position: 'relative' }}>
                   <IonAvatar style={{ width: 48, height: 48 }}>
-                    <InitialsCircle fullname={msg.senderName} bgColor={userColorMap[msg.senderName]} textColor="#fff" size={48} />
+                    <InitialsCircle fullname={loadRecipient(msg)} bgColor={userColorMap[msg.senderName]} textColor="#fff" size={48} />
                   </IonAvatar>
                   {unread && (
                     <span style={{ position: 'absolute', right: -2, top: -2, width: 10, height: 10, borderRadius: 6, background: '#2f80ed', boxShadow: '0 0 0 2px rgba(0,0,0,0.08)' }} />
                   )}
                 </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, color: 'black', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {msg.senderName} · Post · : {msg?.pet?.name ?? '—'}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#666', marginLeft: 12 }}>{timeAgo(msg.createdAt)}</div>
-                  </div>
-                </div>
+             <div style={{ flex: 1, minWidth: 0 }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ fontWeight: 700, color: 'black', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      Chat de {loadRecipient(msg)}
+    </div>
+    <div style={{ fontSize: 12, color: '#666', marginLeft: 12 }}>{timeAgo(msg.createdAt)}</div>
+  </div>
+
+  {/* Último mensaje */}
+  <div style={{
+    fontSize: 13,
+    color: '#444',
+    marginTop: 4,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  }}>
+    {msg?.lastMessage?.content || 'Sin mensaje aún'}
+  </div>
+</div>
               </button>
             )
           })}

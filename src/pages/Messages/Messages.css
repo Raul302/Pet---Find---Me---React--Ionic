@@ -68,3 +68,87 @@
 	color: #6c757d;
 	margin-top: 6px;
 }
+
+/* Conversation thread styling */
+.conversation-thread .comments-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.conversation-thread .comment-item {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+}
+
+.conversation-thread .comment-item.other-message {
+	align-self: flex-start;
+}
+
+.conversation-thread .comment-item.own-message {
+	flex-direction: row-reverse;
+	align-self: flex-end;
+}
+
+.conversation-thread .comment-item .comment-content {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-width: 78%;
+}
+
+.conversation-thread .comment-item.other-message .comment-content {
+	align-items: flex-start;
+}
+
+.conversation-thread .comment-item.own-message .comment-content {
+	align-items: flex-end;
+}
+
+.conversation-thread .comment-item .comment-bubble {
+	background: #ffffff;
+	border-radius: 18px;
+	padding: 10px 14px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+	width: fit-content;
+	max-width: 100%;
+}
+
+.conversation-thread .comment-item .comment-user-name {
+	font-size: 13px;
+	font-weight: 600;
+	color: #050505;
+	margin-bottom: 4px;
+}
+
+.conversation-thread .comment-item .comment-text {
+	font-size: 15px;
+	color: #333;
+	line-height: 1.45;
+	word-wrap: break-word;
+}
+
+.conversation-thread .comment-item.own-message .comment-bubble {
+	background: var(--ion-color-primary, #3880ff);
+	color: #fff;
+	box-shadow: 0 4px 16px rgba(56,128,255,0.32);
+}
+
+.conversation-thread .comment-item.own-message .comment-user-name {
+	color: rgba(255,255,255,0.9);
+}
+
+.conversation-thread .comment-item.own-message .comment-text {
+	color: #fff;
+}
+
+.conversation-thread .comment-item.own-message ion-text {
+	color: rgba(255,255,255,0.75) !important;
+}
+
+@media (max-width: 640px) {
+	.conversation-thread .comment-item .comment-content {
+		max-width: 82%;
+	}
+}

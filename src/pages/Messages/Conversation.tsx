@@ -5,12 +5,12 @@ import AppHeader from '../../components/Header/AppHeader';
 import './Messages.css';
 import { api_endpoint } from '../../config/api';
 import InitialsCircle from '../../hooks/Helper/FormatedNameBox/NameFormatedBox';
-import { thumbsUp, thumbsUpSharp, closeOutline, sendOutline, receipt, locateOutline, closeCircle, radioOutline } from 'ionicons/icons';
-import { timeAgo } from '../../utils/timeAgo';
+import { closeOutline, sendOutline, locateOutline, closeCircle, radioOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { useShareLocation } from '../../hooks/SharingLocation/SharingLocation';
+import { Geolocation } from '@capacitor/geolocation';
 
 const makeThread = (id: string) => {
     // Simple fake thread based on id for preview
@@ -24,15 +24,25 @@ const makeThread = (id: string) => {
 
 const Conversation: React.FC = () => {
     const history = useHistory();
-    const { fetchConversationsByPet, selectedConversation, setSelectedConversation } = useContext(AuthContext) as any;
+    const { selectedConversation, setSelectedConversation, user: authUser } = useContext(AuthContext) as any;
 
-    console.log('selectedConversation', selectedConversation);
     const [isSharing, setIsSharing] = useState(false);
     const [shareToken, setShareToken] = useState<string | null>(null);
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
 
-    const [loading, setLoading] = useState(true);
-    const [conversation, setConversation] = useState<any[]>([]);
+    const [conversation, setConversation] = useState<any[]>(selectedConversation?.messages ?? []);
+
+    const storedUser = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem('data_user') || '{}');
+        } catch (err) {
+            console.warn('Failed to parse stored user', err);
+            return {};
+        }
+    }, []);
+
+    const currentUserId = authUser?.id ?? storedUser?.id ?? storedUser?.userId ?? null;
+
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [toastMsg, setToastMsg] = useState('');
@@ -41,120 +51,14 @@ const Conversation: React.FC = () => {
 
     const isExpired = expiresAt && new Date() > expiresAt;
 
-    const sendMessage = async (text: string) => {
-        const trimmed = (text || '').trim();
-        if (!trimmed) return;
-        const token = localStorage.getItem('accessToken') || '';
-        const data_user = JSON.parse(localStorage.getItem('data_user') || '{}');
-        const msg = {
-            content: trimmed,
-            senderId: data_user.id,
-            senderName: data_user.fullname || 'Yo',
-            createdAt: new Date().toISOString(),
-            petId: selectedConversation?.petId || null,
-            recipientId: selectedConversation?.recipientId || null,
-            receipientName: selectedConversation?.recipientName || 'Desconocido',
-            useful: false
-        };
-
-        const targetUrl = selectedConversation?.conversationId
-            ? `/tabs/messages/conversation?conversationId=${selectedConversation.conversationId}`
-            : selectedConversation?.petId
-                ? `/tabs/messages/conversation?petId=${selectedConversation.petId}`
-                : '/tabs/messages/conversation';
-
-        const formData = new FormData();
-
-        // Agregar campos simples
-        formData.append('content', msg.content);
-        formData.append('petId', msg.petId?.toString() ?? '');
-        formData.append('senderId', msg.senderId?.toString() ?? '');
-        formData.append('senderName', msg.senderName ?? '');
-        formData.append('recipientId', msg.recipientId?.toString() ?? '');
-        formData.append('recipientName', msg.receipientName ?? '');
-        formData.append('status', 'new');
-        formData.append('useful', 'false');
-        formData.append('reported', 'false');
-
-
-        setConversation(prev => [...prev, msg]);
-        setNewMessage('');
-        try {
-            const dmResponse = await fetch(`${api_endpoint}/direct-messages`, {
-                method: 'POST',
-                headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-                body: formData
-            });
-
-            if (!dmResponse.ok) {
-                console.warn('Direct message request failed', dmResponse.status);
-            }
-
-            if (msg.recipientId) {
-                try {
-                    await fetch(`${api_endpoint}/notifications`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...(token ? { Authorization: `Bearer ${token}` } : {})
-                        },
-                        body: JSON.stringify({
-                            userId: msg.recipientId,
-                            actorId: msg.senderId,
-                            actorName: msg.senderName,
-                            type: 'sent you a message',
-                            title: 'Nuevo mensaje',
-                            icon: 'chatbubbles-outline',
-                            targetUrl
-                        })
-                    });
-                } catch (notificationErr) {
-                    console.warn('Failed to trigger push notification', notificationErr);
-                }
-            }
-        } catch (err) {
-            console.warn('Failed to send message', err);
-        }
-    }
     useEffect(() => {
-        const fetchData = async () => {
-            if (selectedConversation) {
-                const resp = await fetchConversationsByPet(selectedConversation.petId);
-                setConversation(resp || []);
-                setLoading(false);
-                console.log('RESP', resp);
-            }
-        };
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (selectedConversation?.messages) {
+            setConversation(selectedConversation.messages);
+        } else {
+            setConversation([]);
+        }
     }, [selectedConversation]);
 
-    const fetchConversation = async () => {
-        if (!selectedConversation) return;
-        const convId = selectedConversation.id || selectedConversation.conversationId;
-        const token = localStorage.getItem('accessToken') || '';
-
-        setLoading(true);
-        try {
-            const resp = await fetch(`${api_endpoint}/direct-messages/conversation/${convId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const data = await resp.json().catch(() => ([]));
-            if (resp.ok) {
-                setConversation(data);
-            } else {
-                console.warn('Failed to fetch messages, using sample data');
-            }
-        } catch (err) {
-            console.warn('Error fetching messages:', err);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const handleShareLocationClick = () => {
         if (!navigator.geolocation) {
@@ -202,7 +106,7 @@ const Conversation: React.FC = () => {
     const userColorMap = useMemo(() => {
         const map: { [name: string]: string } = {};
         conversation.forEach(m => {
-            const name = m.senderName || 'Usuario';
+            const name = m.senderName || m.userName || m.user?.fullname || m.user?.name || 'Usuario';
             if (!map[name]) map[name] = colorOptions[Math.floor(Math.random() * colorOptions.length)];
         });
         return map;
@@ -212,7 +116,87 @@ const Conversation: React.FC = () => {
 
     // ============================================= SHARING LOCATION SCOKETS =================================================
 
+    function isIOS() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    function isAndroid() {
+        return /Android/i.test(navigator.userAgent);
+    }
+
+
+    const shareOnWhatsApp = (message: string) => {
+
+        const encoded = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/?text=${encoded}`;
+
+        if (isIOS()) {
+            // iOS Safari prefers direct navigation
+            window.location.assign(whatsappUrl);
+        } else if (isAndroid()) {
+            // Android browsers usually allow new tab
+            window.open(whatsappUrl, '_blank');
+        } else {
+            // Fallback for desktop/web
+            window.open(whatsappUrl, '_blank');
+        }
+    }
+
+    const getMandatoryCoordinates = async () => {
+
+        setToastOpen(true);
+        setToastMsg("Obteniendo ubicación...");
+        if (Capacitor.getPlatform() === 'web') {
+            if (!('geolocation' in navigator)) {
+                return { success: false, reason: 'Geolocalización no disponible en este navegador.' };
+            }
+
+            try {
+                const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true });
+                });
+
+                return {
+                    success: true,
+                    coords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+                };
+            } catch (err: any) {
+                const permissionDenied = typeof err?.code === 'number' && err.code === err.PERMISSION_DENIED;
+                const reason = permissionDenied ? 'Permiso de ubicación denegado.' : (err?.message || 'No se pudo obtener la ubicación.');
+                return { success: false, reason };
+            }
+        }
+
+        try {
+            const permStatus = await Geolocation.checkPermissions();
+
+            if (permStatus.location !== 'granted') {
+                const req = await Geolocation.requestPermissions();
+                if (req.location !== 'granted') {
+                    return { success: false, reason: 'Permiso de ubicación denegado.' };
+                }
+            }
+
+            const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+            return {
+                success: true,
+                coords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+            };
+        } catch (err: any) {
+            console.warn('Error al obtener ubicación con Capacitor Geolocation', err);
+            return { success: false, reason: 'No se pudo obtener la ubicación.' };
+        }
+    };
+
     const handleShareLocation = async () => {
+
+        const coordsResult = await getMandatoryCoordinates();
+
+        if (!coordsResult.success || !coordsResult.coords) {
+            setToastMsg(coordsResult.reason || 'No se pudo obtener la ubicación. Por favor, intenta de nuevo.');
+            setToastOpen(true);
+            return;
+        }
         try {
             const token = localStorage.getItem('accessToken') || '';
             const user = JSON.parse(localStorage.getItem('data_user') || '{}');
@@ -231,7 +215,7 @@ const Conversation: React.FC = () => {
                 body: JSON.stringify({
                     userId: user.id,
                     durationMinutes: 5,
-                    coords: user.coords || null,
+                    coords: coordsResult.coords || null,
                 }),
             });
 
@@ -240,16 +224,14 @@ const Conversation: React.FC = () => {
                 alert('No se pudo generar el link de ubicación.');
                 return;
             }
+            console.log('SHAAAAA',data);
             setIsSharing(true);
             setExpiresAt(new Date(data.expiresAt));
             setShareToken(data.shareToken);
             const message = `Hola, te comparto mi ubicación en tiempo real (5 min): ${data.link}`;
 
-            const shareOnWeb = () => {
-                const encoded = encodeURIComponent(message);
-                const whatsappUrl = `https://wa.me/?text=${encoded}`;
-                window.location.assign(whatsappUrl);
-            };
+            const shareApi = (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share;
+            let shareHandled = false;
 
             try {
                 if (Capacitor.isNativePlatform()) {
@@ -258,18 +240,21 @@ const Conversation: React.FC = () => {
                         text: message,
                         url: data.link,
                     });
-                } else if ('share' in navigator) {
-                    await (navigator as Navigator & { share: (data: ShareData) => Promise<void> }).share({
+                    shareHandled = true;
+                } else if (typeof shareApi === 'function') {
+                    await shareApi({
                         title: 'Ubicación en tiempo real',
                         text: message,
                         url: data.link,
                     });
-                } else {
-                    shareOnWeb();
+                    shareHandled = true;
                 }
             } catch (err) {
-                console.warn('Share failed, falling back to WhatsApp link', err);
-                shareOnWeb();
+                console.warn('Share failed, fallback to WhatsApp link', err);
+            }
+
+            if (!shareHandled) {
+                shareOnWhatsApp(message);
             }
         } catch (err) {
             console.error(err);
@@ -289,14 +274,58 @@ const Conversation: React.FC = () => {
         }
     }, [expiresAt]);
 
-function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinutes: number, shareToken: string }) {
-    console.log('SHARELOCATIONSESSION CALLED IN CONVERSATION.TSX');
+    function ShareLocationSession({ durationMinutes, shareToken }: { durationMinutes: number, shareToken: string }) {
+        console.log('SHARELOCATIONSESSION CALLED IN CONVERSATION.TSX');
         const user = localStorage.getItem('data_user') ? JSON.parse(localStorage.getItem('data_user') || '{}') : null;
         const userId = Number(user?.id ?? 0);
         useShareLocation(userId, durationMinutes, shareToken);
-  return null; // no renderiza nada, solo activa el hook
-}
+        return null; // no renderiza nada, solo activa el hook
+    }
 
+    const sendMessage = async (content: string) => {
+        if (!selectedConversation) return;
+        const token = localStorage.getItem('accessToken') || '';
+        const dataUser = Object.keys(authUser ?? {}).length ? authUser : storedUser;
+        const parsedCurrentId = currentUserId != null ? Number(currentUserId) : undefined;
+        const senderId = Number.isFinite(parsedCurrentId) ? parsedCurrentId : dataUser?.id ?? null;
+
+        fetch(`${api_endpoint}/conversations/${selectedConversation.id}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                content,
+                userId: senderId,
+                coords: dataUser?.coords || null,
+                address: dataUser?.address || '',
+                staus: 'sent'
+            }),
+        })
+            .then(async res => {
+                if (!res.ok) {
+                    const message = await res.text().catch(() => '');
+                    throw new Error(message || `HTTP ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                const senderName = data?.senderName || dataUser?.fullname || dataUser?.name || 'Yo';
+                const normalisedMessage = {
+                    ...data,
+                    senderId: data?.senderId ?? data?.userId ?? senderId ?? null,
+                    senderName
+                };
+                setConversation(prev => [...prev, normalisedMessage]);
+                setNewMessage('');
+            })
+            .catch(err => {
+                console.error('Error sending message:', err);
+                setToastMsg('Error al enviar el mensaje');
+                setToastOpen(true);
+            });
+    };
 
     return (
         <IonPage>
@@ -322,10 +351,10 @@ function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinut
                     }
                 </IonButtons>
 
-                    {/* Montamos el hook solo mientras está compartiendo */}
-                    {isSharing && shareToken && (
-                        <ShareLocationSession  durationMinutes={5} shareToken={shareToken} />
-                    )}
+                {/* Montamos el hook solo mientras está compartiendo */}
+                {isSharing && shareToken && (
+                    <ShareLocationSession durationMinutes={5} shareToken={shareToken} />
+                )}
 
                 <IonModal isOpen={showRateModal} onDidDismiss={() => setShowRateModal(false)} className="rate-modal">
                     <IonHeader>
@@ -347,45 +376,52 @@ function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinut
             </IonToolbar>
             <IonContent>
                 <div style={{ padding: 12 }}>
-                    <div className="comments-section">
+                    <div className="comments-section conversation-thread">
                         {/* Comments list */}
                         <div className="comments-list">
-                            {conversation.map(conversation => (
-                                <div key={conversation.id} className="comment-item">
-                                    <IonAvatar className="comment-avatar">
-                                        <InitialsCircle
-                                            bgColor={userColorMap[conversation.senderName]}
+                            {conversation.map((message, index) => {
+                                const messageSenderId = message?.senderId ?? message?.userId ?? message?.sender_id ?? message?.sender?.id ?? message?.user?.id ?? null;
+                                const isOwnMessage = currentUserId != null && messageSenderId != null && String(messageSenderId) === String(currentUserId);
+                                const senderDisplayName = message?.sender?.fullname || 'Usuario';
+                                const paletteKey = senderDisplayName;
+                                const messageKey = message?.id ?? `msg-${index}-${message?.createdAt ?? Date.now()}`;
 
-                                            fullname={conversation.senderName} />
-                                    </IonAvatar>
-                                    <div className="comment-content">
-                                        <div className="comment-bubble">
-                                            <div className="comment-user-name">{conversation.senderName}</div>
-                                            <div className="comment-text">{conversation.content}</div>
-                                            {conversation.photos && Array.isArray(conversation.photos) && conversation.photos.length > 0 && (
-                                                <div className="comment-photos" style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                                                    {conversation.photos.map((p: any, i: number) => {
-                                                        const url = typeof p === 'string' ? p : (p.url || '');
-                                                        return (
-                                                            <img
-                                                                key={i}
-                                                                src={url}
-                                                                alt={`photo-${i}`}
-                                                                style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }}
-                                                                onClick={() => setSelectedPhoto(url)}
-                                                            />
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            <IonText style={{ color: '#b8adadff', fontWeight: '300', fontSize: 12, marginTop: 8, display: 'block' }}>
-                                                {conversation?.address}
-                                            </IonText>
+                                return (
+                                    <div key={messageKey} className={`comment-item ${isOwnMessage ? 'own-message' : 'other-message'}`}>
+                                        <IonAvatar className="comment-avatar">
+                                            <InitialsCircle
+                                                bgColor={isOwnMessage ? '#ff6600' : '#007bff'}
+                                                fullname={senderDisplayName} />
+                                        </IonAvatar>
+                                        <div className="comment-content">
+                                            <div className="comment-bubble" style={{ textAlign: isOwnMessage ? 'left' : 'right' }}>
+                                                <div className="comment-user-name">{senderDisplayName}</div>
+                                                <div className="comment-text">{message.content}</div>
+                                                {message.photos && Array.isArray(message.photos) && message.photos.length > 0 && (
+                                                    <div className="comment-photos" style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                                                        {message.photos.map((p: any, i: number) => {
+                                                            const url = typeof p === 'string' ? p : (p.url || '');
+                                                            return (
+                                                                <img
+                                                                    key={i}
+                                                                    src={url}
+                                                                    alt={`photo-${i}`}
+                                                                    style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }}
+                                                                    onClick={() => setSelectedPhoto(url)}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                                <IonText style={{ color: '#b8adadff', fontWeight: '300', fontSize: 12, marginTop: 8, display: 'block', textAlign: isOwnMessage ? 'right' : 'left' }}>
+                                                    {message?.address}
+                                                </IonText>
+                                            </div>
+
                                         </div>
-
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                         </div>
 
@@ -433,6 +469,13 @@ function ShareLocationSession({  durationMinutes, shareToken }: {  durationMinut
                         </div>
                     </IonContent>
                 </IonModal>
+                <IonToast
+                    position="top"
+                    isOpen={toastOpen}
+                    message={toastMsg}
+                    onDidDismiss={() => setToastOpen(false)}
+                    duration={4000}
+                />
             </IonContent>
         </IonPage>
     );

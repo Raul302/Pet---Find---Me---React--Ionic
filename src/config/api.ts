@@ -4,7 +4,17 @@ export const API_BASE = (import.meta.env && (import.meta.env.VITE_API_BASE as st
 
 // Simple explicit endpoint export for convenience.
 // Falls back to localhost if VITE_API_BASE is not provided.
+// export const api_endpoint = API_BASE || 'https://api.lrpm.space/api';
+
+
+// TESTING LOCAL
+// export const api_endpoint = API_BASE || 'http://localhost:3000/api';
+
+
+// PRODUCTION
 export const api_endpoint = API_BASE || 'https://api.lrpm.space/api';
+
+
 
 /**
  * Build a full API URL from a path. Keeps a single place to change the backend base URL.

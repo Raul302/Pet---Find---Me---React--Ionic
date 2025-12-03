@@ -9,7 +9,7 @@ import 'swiper/css/autoplay';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { animalsJson } from '../../hardcoded/Grid_Animals/StaticElements'; // Static data for animals
+// import { animalsJson } from '../../hardcoded/Grid_Animals/StaticElements'; // Static data for animals
 import { sendOutline, heartOutline, heart, cameraOutline, location as location_icon, locateOutline, body, thumbsUp, thumbsDownOutline, thumbsUpOutline, thumbsUpSharp, close } from 'ionicons/icons';
 import React from 'react';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
@@ -46,7 +46,7 @@ const PetsDetail: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const { selectedPet, setSelectedPet, pets, user } = React.useContext(AuthContext) as any;
-  const [animal, setAnimal] = useState<any | null>(selectedPet ?? animalsJson.find(a => a.id === parseInt(id || '0')));
+  const [animal, setAnimal] = useState<any | null>(selectedPet ?? null);
 
   useEffect(() => {
     if (selectedPet) {
@@ -165,17 +165,25 @@ const PetsDetail: React.FC = () => {
       const userObj = JSON.parse(data_user || '{}');
       const userId = userObj.id;
       if (!userId) return;
-      const resp = await fetch(`${api_endpoint}/direct-messages/exists/${animal.id}/${userId}`, {
-        method: 'GET',
+      const resp = await fetch(`${api_endpoint}/conversations/check/`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          userA: userId,
+          userB: animal.owner_post,
+          petId: animal.id
+        })
       });
       if (!resp.ok) {
         setHasContactedOwner(false);
         return;
       }
       const json = await resp.json().catch(() => null);
+
+      console.log('JSON RESPONSE',json);
       // backend may return boolean or { exists: true }
       const exists = typeof json === 'boolean' ? json : (json && (json.exists === true || json.exists === 'true')) ? true : false;
       setHasContactedOwner(Boolean(exists));
@@ -279,15 +287,15 @@ const handleSendContact = async () => {
   // Agregar campos simples
   formData.append('content', contactMessage);
   formData.append('petId', animal?.id?.toString() ?? '');
-  formData.append('senderId', JSON.parse(data_user).id?.toString() ?? '');
-  formData.append('senderName', JSON.parse(data_user).fullname ?? '');
-  formData.append('recipientId', animal?.owner_post?.toString() ?? '');
-  formData.append('recipientName', animal?.owner_name ?? '');
   formData.append('status', 'new');
-  formData.append('useful', 'false');
-  formData.append('reported', 'false');
   formData.append('coords', contactLocation ? JSON.stringify(contactLocation) : '');
   formData.append('address', contactAddress ?? '');
+
+
+formData.append('members', JSON.stringify([
+  { id: JSON.parse(data_user).id, fullname: JSON.parse(data_user).fullname },
+  { id: animal?.owner_post, fullname: animal?.owner_name }
+]));
 
   // Agregar fotos (si son File o Blob)
   if (contactPhotos && contactPhotos.length > 0) {
@@ -306,7 +314,7 @@ const handleSendContact = async () => {
   }
 
   try {
-    const resp = await fetch(`${api_endpoint}/direct-messages/`, {
+    const resp = await fetch(`${api_endpoint}/conversations/create/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}` 
@@ -318,32 +326,7 @@ const handleSendContact = async () => {
     if (resp.ok) {
       setToastMsg('Mensaje Enviado al propietario');
       setToastOpen(true);
-        // Create a notification for the owner
-        try {
-          const parsedUser = JSON.parse(data_user || '{}');
-          const notifBody = {
-            userId: animal?.owner_post ?? null,
-            actorId: parsedUser?.id ?? null,
-            actorName: parsedUser?.fullname ?? parsedUser?.name ?? null,
-            type: 'message',
-            title: `Nuevo mensaje sobre ${animal?.name ?? 'tu publicación'}`,
-            icon: 'chat',
-            targetUrl: `/tabs/messages?petId=${animal?.id ?? ''}`
-          };
-          // Only attempt if we have a target user
-          if (notifBody.userId) {
-            await fetch(`${api_endpoint}/notifications`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(notifBody)
-            }).catch(err => console.warn('Notification create failed', err));
-          }
-        } catch (e) {
-          console.warn('Failed building notification body', e);
-        }
+      
     } else {
       console.warn('Failed to fetch messages, using sample data');
     }
@@ -727,7 +710,7 @@ const handleSendContact = async () => {
             </div>
           )}
           {selectedTab === 'Contact' && (
-            isClosed ? (
+            isClosed  ? (
               <div className="contact-section">
                 <div className="contact-info">
                   <h2>Contacto</h2>
@@ -737,7 +720,7 @@ const handleSendContact = async () => {
                 </div>
               </div>
             ) : (
-              hasContactedOwner ? (
+              hasContactedOwner  || (animal.owner_post == currentUserId) ? (
                 <div className="contact-section">
                   <div className="contact-info">
                     <h2>Contacto</h2>

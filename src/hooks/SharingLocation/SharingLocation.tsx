@@ -16,7 +16,9 @@ const emitLocationUpdate = (payload: { userId: number; coords: { lat: number; ln
     return;
   }
 
-  socket.emit('sendLocation', payload);
+  socket.emit('sendLocation', payload , () =>{
+    console.log('SEND LOCATION');
+  });
 };
 
 export function useShareLocation(userId: number, durationMinutes: number, shareToken: string) {
@@ -126,5 +128,5 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
       }
       clearWatchers();
     };
-  }, [userId, durationMinutes, shareToken]);
+  }, [userId, durationMinutes]);
 }
