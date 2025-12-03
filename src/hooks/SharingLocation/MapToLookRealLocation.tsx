@@ -44,7 +44,7 @@ useEffect(() => {
         // Manejar expiración
         console.warn('Ubicación expirada o no encontrada');
         setCenter(null); // no hay centro válido
-        alert('Esta ubicación ya expiró'); // o mostrar un mensaje en UI
+        alert('[ PetFindMe ] Esta ubicación ya expiró'); // o mostrar un mensaje en UI
         return;
       }
       const data = await resp.json();
