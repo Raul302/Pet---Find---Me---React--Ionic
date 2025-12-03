@@ -37,7 +37,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: "v9_petfindme_cache",  
+        cacheId: "v1.1_petfindme_cache",  
         cleanupOutdatedCaches: true
       }
     })
