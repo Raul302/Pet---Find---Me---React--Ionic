@@ -40,7 +40,9 @@ export function LiveLocationViewer() {
     const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
     fetch(`${apiEndpoint}/api/live-location/${token}`)
       .then(async (resp) => {
-        if (!resp.ok) return;
+        if (!resp.ok) {
+          alert('No se pudo obtener la ubicación en vivo. El enlace puede ser inválido o haber expirado.');
+        };
         const data = await resp.json();
         const coords = data?.coords;
         if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
@@ -52,6 +54,7 @@ export function LiveLocationViewer() {
 
  // C: Escuchar actualizaciones del socket filtradas por token
 useEffect(() => {
+
   const listener = (data: any) => {
     if (data?.shareToken !== token) return;
 
