@@ -84,7 +84,9 @@ async function initFCM() {
     // Enviar token a tu backend para guardarlo por usuario
     await fetch("https://api.lrpm.space/api/save-fcm-token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+        'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+       },
       body: JSON.stringify({ token })
     });
   } catch (err) {
