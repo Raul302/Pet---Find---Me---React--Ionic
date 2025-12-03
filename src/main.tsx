@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
@@ -6,7 +6,7 @@ import App from './App';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import { AuthProvider } from './hooks/Context/AuthContext/AuthContext';
+import { AuthContext, AuthProvider } from './hooks/Context/AuthContext/AuthContext';
 import { IonReactRouter } from '@ionic/react-router';
 
 // Service workers
@@ -58,6 +58,16 @@ async function registerFcmServiceWorker() {
     return null;
   }
 }
+
+
+const { user } = useContext(AuthContext);
+useEffect(() => { 
+
+  if(user){
+    initFCM();
+  }
+
+}, [user]);
 
 // Pedir permiso y obtener token FCM
 async function initFCM() {
@@ -118,7 +128,7 @@ onMessage(messaging, (payload: NotificationPayload) => {
   }
 });
 
-initFCM();
+// initFCM();
 
 
 
