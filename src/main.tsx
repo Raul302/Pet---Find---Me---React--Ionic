@@ -93,7 +93,14 @@ async function initFCM() {
 }
 
 // Mensajes en foreground (app visible)
-onMessage(messaging, (payload) => {
+interface NotificationPayload {
+  notification?: {
+    title?: string;
+    body?: string;
+  };
+}
+
+onMessage(messaging, (payload: NotificationPayload) => {
   console.log("Mensaje recibido en foreground:", payload);
   // Aquí puedes lanzar un toast, banner, o actualizar UI.
   // Para mostrar una notificación del sistema en foreground, usa el SW:
