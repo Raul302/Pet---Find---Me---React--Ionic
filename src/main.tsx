@@ -70,7 +70,7 @@ async function initFCM() {
 
     const swReg = await registerFcmServiceWorker();
     const token = await getToken(messaging, {
-      vapidKey: "BPojyZk6LJYkK-zr_U66xzueqx5akAL6WOw2mttaREftTk_TdQKkIaPefl_CShd7vkqhgMLbBl1r0BW6IzAz38",
+      vapidKey: "BPojyZk6LJYkK-zr_U66xzueqx5akAL6WOw2mttaREftTk_TdQKkIaPefl_CShd7vkqhgMLbBl1r0BW6IzAz38g",
       serviceWorkerRegistration: swReg || undefined
     });
 
