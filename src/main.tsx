@@ -78,7 +78,11 @@ async function initFCM() {
       console.warn("No se obtuvo token FCM (posible bloqueo del navegador).");
       return;
     }
-
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      console.error("No hay accessToken, el usuario no está autenticado.");
+      return;
+}
     console.log("FCM Token:", token);
 
     // Enviar token a tu backend para guardarlo por usuario
