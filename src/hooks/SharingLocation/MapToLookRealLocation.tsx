@@ -8,13 +8,8 @@ type LiveLocation = {
   coords: { lat: number; lng: number };
 };
 
-const DEFAULT_CENTER = { lat: 25.601, lng: -103.413 };
 const GOOGLE_MAPS_LIBRARIES: ('places')[] = ['places'];
-
-// Conexión al servidor WebSocket
-const socket = io('https://api.lrpm.space', {
-  transports: ['websocket']
-});
+const socket = io('https://api.lrpm.space', { transports: ['websocket'] });
 
 socket.on('connect', () => {
   console.log('Socket conectado:', socket.id);
@@ -22,8 +17,8 @@ socket.on('connect', () => {
 
 export function LiveLocationViewer() {
   const { token } = useParams<{ token: string }>();
-
   const [locations, setLocations] = useState<LiveLocation[]>([]);
+  const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
@@ -33,45 +28,60 @@ export function LiveLocationViewer() {
     language: 'es'
   });
 
+  // A: Unirse a la sala del token
+  useEffect(() => {
+    if (!token) return;
+    socket.emit('joinLiveLocation', token);
+  }, [token]);
+
+  // B: Fetch inicial para centrar el mapa
+  useEffect(() => {
+    if (!token) return;
+    const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
+    fetch(`${apiEndpoint}/live-location/${token}`)
+      .then(async (resp) => {
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const coords = data?.coords;
+        if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+          setCenter({ lat: Number(coords.lat), lng: Number(coords.lng) });
+        }
+      })
+      .catch(() => {});
+  }, [token]);
+
+  // C: Escuchar actualizaciones del socket filtradas por token
   useEffect(() => {
     const listener = (data: any) => {
-      console.log('Ubicación recibida:', data);
+      if (data?.shareToken !== token) return;
 
-      // Filtrar por el shareToken de la URL
-      if (data.shareToken !== token) return;
+      const lat = Number(data?.coords?.lat);
+      const lng = Number(data?.coords?.lng);
+      const userId = String(data?.userId ?? '');
 
-      const normalized: LiveLocation | null = data && data.coords
-        ? {
-            userId: String(data.userId ?? ''),
-            coords: {
-              lat: Number(data.coords.lat),
-              lng: Number(data.coords.lng)
-            }
-          }
-        : null;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !userId) return;
 
-      if (!normalized || Number.isNaN(normalized.coords.lat) || Number.isNaN(normalized.coords.lng)) {
-        return;
-      }
+      const normalized: LiveLocation = { userId, coords: { lat, lng } };
 
       setLocations(prev => {
         const filtered = prev.filter(loc => loc.userId !== normalized.userId);
         return [...filtered, normalized];
       });
+
+      setCenter({ lat, lng });
     };
 
     socket.on('updateLocation', listener);
-
     return () => {
       socket.off('updateLocation', listener);
     };
   }, [token]);
 
+  // D: PanTo cuando haya center
   useEffect(() => {
-    if (!mapRef.current || locations.length === 0) return;
-    const latest = locations[locations.length - 1];
-    mapRef.current.panTo(latest.coords);
-  }, [locations]);
+    if (!mapRef.current || !center) return;
+    mapRef.current.panTo(center);
+  }, [center]);
 
   const containerStyle = useMemo(() => ({ height: '100vh', width: '100%' }), []);
   const mapOptions = useMemo<google.maps.MapOptions>(() => ({
@@ -83,21 +93,11 @@ export function LiveLocationViewer() {
   }), []);
 
   if (!apiKey) {
-    return (
-      <div style={{ padding: 24 }}>
-        Falta configurar <code>VITE_GOOGLE_MAPS_API_KEY</code> para mostrar el mapa.
-      </div>
-    );
+    return <div style={{ padding: 24 }}>Falta configurar <code>VITE_GOOGLE_MAPS_API_KEY</code> para mostrar el mapa.</div>;
   }
-
   if (loadError) {
-    return (
-      <div style={{ padding: 24 }}>
-        No se pudo cargar Google Maps: {String(loadError)}
-      </div>
-    );
+    return <div style={{ padding: 24 }}>No se pudo cargar Google Maps: {String(loadError)}</div>;
   }
-
   if (!isLoaded) {
     return <div style={{ padding: 24 }}>Cargando mapa...</div>;
   }
@@ -105,7 +105,7 @@ export function LiveLocationViewer() {
   return (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={DEFAULT_CENTER}
+      center={center ?? { lat: 25.601, lng: -103.413 }}
       zoom={13}
       options={mapOptions}
       onLoad={map => { mapRef.current = map; }}

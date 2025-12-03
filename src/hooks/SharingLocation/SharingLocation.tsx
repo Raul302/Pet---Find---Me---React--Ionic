@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { io } from 'socket.io-client';
 
+// Conexión al servidor WebSocket
 const socket = io('https://api.lrpm.space', {
   transports: ['websocket', 'polling']
 });
@@ -11,21 +12,25 @@ socket.on('connect_error', err => {
   console.error('Socket connection error:', err.message);
 });
 
+// Función para emitir coordenadas
 const emitLocationUpdate = (payload: { userId: number; coords: { lat: number; lng: number }; shareToken: string }) => {
-  if (!payload.shareToken) {
-    return;
-  }
-
-  socket.emit('sendLocation', payload , () =>{
-    console.log('SEND LOCATION');
+  if (!payload.shareToken) return;
+  console.log('Emitiendo ubicación:', payload);
+  socket.emit('sendLocation', payload, (ack: any) => {
+    if (ack?.ok) {
+      console.log('Ubicación enviada correctamente');
+    } else {
+      console.warn('Error al enviar ubicación:', ack?.error);
+    }
   });
 };
 
 export function useShareLocation(userId: number, durationMinutes: number, shareToken: string) {
   useEffect(() => {
-    if (!userId || !shareToken) {
-      return;
-    }
+    if (!userId || !shareToken) return;
+
+    // A: Unirse a la sala del token (emisor también)
+    socket.emit('joinLiveLocation', shareToken);
 
     let isCancelled = false;
     let nativeWatchId: string | null = null;
@@ -37,7 +42,6 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
         Geolocation.clearWatch({ id: nativeWatchId }).catch(err => console.warn('Failed to clear native watch', err));
         nativeWatchId = null;
       }
-
       if (webWatchId !== null) {
         navigator.geolocation.clearWatch(webWatchId);
         webWatchId = null;
@@ -45,17 +49,10 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
     };
 
     const emitFromPosition = (position: GeolocationPosition | Position | null) => {
-      if (!position || isCancelled) {
-        return;
-      }
-
+      if (!position || isCancelled) return;
       const { latitude, longitude } = position.coords;
       if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-        emitLocationUpdate({
-          userId,
-          shareToken,
-          coords: { lat: latitude, lng: longitude }
-        });
+        emitLocationUpdate({ userId, shareToken, coords: { lat: latitude, lng: longitude } });
       }
     };
 
@@ -73,13 +70,10 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
         console.warn('Unable to get current position', err);
         return null;
       });
-
       emitFromPosition(position);
 
       nativeWatchId = await Geolocation.watchPosition({ enableHighAccuracy: true }, watchPosition => {
-        if (watchPosition) {
-          emitFromPosition(watchPosition);
-        }
+        if (watchPosition) emitFromPosition(watchPosition);
       });
     };
 
@@ -113,6 +107,7 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
         console.error('Failed to start location sharing', err);
       }
 
+      // Detener después de durationMinutes
       timeoutId = setTimeout(() => {
         isCancelled = true;
         clearWatchers();
@@ -123,10 +118,8 @@ export function useShareLocation(userId: number, durationMinutes: number, shareT
 
     return () => {
       isCancelled = true;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
       clearWatchers();
     };
-  }, [userId, durationMinutes]);
+  }, [userId, durationMinutes, shareToken]); // incluye shareToken
 }
