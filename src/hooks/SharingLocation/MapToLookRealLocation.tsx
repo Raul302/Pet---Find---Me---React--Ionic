@@ -35,28 +35,20 @@ export function LiveLocationViewer() {
   }, [token]);
 
   // B: Fetch inicial para centrar el mapa
-useEffect(() => {
-  if (!token) return;
-  const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
-  fetch(`${apiEndpoint}/api/live-location/${token}`)
-    .then(async (resp) => {
-
-      console.log('Fetch inicial live-location resp', resp);
-      if (!resp.ok) {
-        // Manejar expiración
-        console.warn('Ubicación expirada o no encontrada');
-        setCenter(null); // no hay centro válido
-        alert('[ PetFindMe ] Esta ubicación ya expiró'); // o mostrar un mensaje en UI
-        return;
-      }
-      const data = await resp.json();
-      const coords = data?.coords;
-      if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
-        setCenter({ lat: Number(coords.lat), lng: Number(coords.lng) });
-      }
-    })
-    .catch(() => {});
-}, [token]);
+  useEffect(() => {
+    if (!token) return;
+    const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || 'https://api.lrpm.space';
+    fetch(`${apiEndpoint}/live-location/${token}`)
+      .then(async (resp) => {
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const coords = data?.coords;
+        if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+          setCenter({ lat: Number(coords.lat), lng: Number(coords.lng) });
+        }
+      })
+      .catch(() => {});
+  }, [token]);
 
  // C: Escuchar actualizaciones del socket filtradas por token
 useEffect(() => {
