@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import { useParams } from 'react-router';
 
 type LiveLocation = {
   userId: string;
@@ -20,6 +21,8 @@ socket.on('connect', () => {
 });
 
 export function LiveLocationViewer() {
+  const { token } = useParams<{ token: string }>();
+
   const [locations, setLocations] = useState<LiveLocation[]>([]);
   const mapRef = useRef<google.maps.Map | null>(null);
 
@@ -33,6 +36,10 @@ export function LiveLocationViewer() {
   useEffect(() => {
     const listener = (data: any) => {
       console.log('Ubicación recibida:', data);
+
+      // Filtrar por el shareToken de la URL
+      if (data.shareToken !== token) return;
+
       const normalized: LiveLocation | null = data && data.coords
         ? {
             userId: String(data.userId ?? ''),
@@ -58,7 +65,7 @@ export function LiveLocationViewer() {
     return () => {
       socket.off('updateLocation', listener);
     };
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (!mapRef.current || locations.length === 0) return;
@@ -104,7 +111,6 @@ export function LiveLocationViewer() {
       onLoad={map => { mapRef.current = map; }}
       onUnmount={() => { mapRef.current = null; }}
     >
-      <Marker position={DEFAULT_CENTER} title="Este soy yo" label="Yo" />
       {locations.map(location => (
         <Marker
           key={location.userId}
