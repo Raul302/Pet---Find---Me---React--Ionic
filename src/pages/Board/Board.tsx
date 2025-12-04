@@ -155,7 +155,7 @@ const Board: React.FC = () => {
 
         <div className="carousel-wrapper">
           <h2 style={{ color: 'var(--color-primary)', padding: '10px' }} className="carousel-title">
-            Mascotas Encontradas
+            Descubre , Encuentra y Ayuda a Mascotas Perdidas
           </h2>
 
           {loadingCarousel && (
