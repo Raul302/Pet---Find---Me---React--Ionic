@@ -16,6 +16,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { firebaseConfig } from "./firebase/firebaseConfig";
+import FireBaseNotifier from './firebase/component/FireBaseNotifier';
 
 
 defineCustomElements(window);
@@ -136,6 +137,7 @@ root.render(
     <IonReactRouter>
       <AuthProvider>
         <App />
+        <FireBaseNotifier />
       </AuthProvider>
     </IonReactRouter>
   </React.StrictMode>
