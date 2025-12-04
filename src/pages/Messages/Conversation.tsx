@@ -329,7 +329,7 @@ const Conversation: React.FC = () => {
 
     return (
         <IonPage>
-            <AppHeader />
+            {/* <AppHeader /> */}
             <IonToolbar style={{ padding: 12 }}>
                 <IonButton onClick={() => history.push('/tabs/messages')} slot="start">Atrás</IonButton>
                 <IonTitle style={{ textAlign: 'center' }}>{selectedConversation?.pet?.name ?? 'Conversación'}</IonTitle>

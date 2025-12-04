@@ -3,6 +3,8 @@ import { IonModal, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSp
 import { mapsApiKey } from '../../assets/DontBackup/Credentials';
 import { api_endpoint } from '../../config/api';
 import { AuthContext } from '../../hooks/Context/AuthContext/AuthContext';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
 
 interface ModalLocationProps {
   isOpen: boolean;
@@ -22,6 +24,7 @@ const ModalLocation: React.FC<ModalLocationProps> = ({ isOpen, onDidDismiss , on
   const [submitting, setSubmitting] = useState(false);
     const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const mountedRef = useRef(true);
 
   const [address,address_formated] = useState('');
 
@@ -210,6 +213,100 @@ const ModalLocation: React.FC<ModalLocationProps> = ({ isOpen, onDidDismiss , on
     }
   };
   
+
+useEffect(() => {
+  return () => {
+    mountedRef.current = false;
+  };
+}, []);
+
+
+   useEffect(() => {
+    if (isOpen) {
+      setLoadingAddress(true);
+      if (Capacitor.getPlatform() === 'web') {
+        // navegador
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            setCoords(c);
+            const coordStr = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+            const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
+              if (addr) {
+                setQuery(addr);
+                // updateQuery(addr);
+                setAddressFailed(false);
+              } else {
+               if (!toastOpen) {
+                  setToastMsg('No se pudo obtener la dirección automáticamente. Por favor, escríbela manualmente.');
+                  setToastOpen(true);
+                }
+              }
+            setLoadingAddress(false);
+          },
+          (err) => {
+            console.error('Error web:', err);
+            // PERMISSION_DENIED === 1
+            if (err && err.code === 1) {
+              setAddressFailed(true);
+              setToastMsg('No se concedieron permisos de ubicación. Por favor, escribe la dirección manualmente.');
+              setToastOpen(true);
+            }
+            setLoadingAddress(false);
+          }
+        );
+      } else {
+        // móvil con Capacitor
+        
+      (async () => {
+  
+          try {
+            setLoadingAddress(true);
+            // 🔑 Verificar permisos actuales
+            const permStatus = await Geolocation.checkPermissions();
+  
+            if (permStatus.location !== 'granted') {
+              // 🔑 Si no están concedidos, pedirlos
+              const req = await Geolocation.requestPermissions();
+              if (req.location !== 'granted') {
+                // usuario negó permisos
+                setAddressFailed(true);
+                setToastMsg('No se concedieron permisos de ubicación. Por favor, escribe la dirección manualmente.');
+                setToastOpen(true);
+                setLoadingAddress(false);
+                return;
+              }
+            }
+  
+            // 🔑 Obtener ubicación
+            const pos = await Geolocation.getCurrentPosition();
+            const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            setCoords(c);
+            const coordStr = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+            const addr = await getAddressWithRetries(c.lat, c.lng, 3, 700);
+            if (mountedRef.current) {
+              if (addr ) {
+                updateQuery(addr, 'geolocation', c);
+                setAddressFailed(false);
+              } else {
+                updateQuery(addr, 'geolocation', c);
+                setAddressFailed(true);
+                if (!toastOpen) {
+                  setToastMsg('No se pudo obtener la dirección automáticamente. Por favor, escríbela manualmente.');
+                  setToastOpen(true);
+                }
+              }
+            }
+            // mobile position received
+            setLoadingAddress(false);
+          } catch (err) {
+            console.error("Error al obtener ubicación:", err);
+            setLoadingAddress(false);
+          }
+        })();
+      }
+    }
+  }, [isOpen]);
   
   
    
@@ -266,7 +363,7 @@ const ModalLocation: React.FC<ModalLocationProps> = ({ isOpen, onDidDismiss , on
                     >
                         <IonHeader>
                             <IonToolbar>
-                                <IonTitle>Ubicacion</IonTitle>
+                                <IonTitle>Cambiar ubicación</IonTitle>
                             </IonToolbar>
                         </IonHeader>
                         <IonContent className="custom-modal-location" style={{position: 'relative'}}>
@@ -284,6 +381,9 @@ const ModalLocation: React.FC<ModalLocationProps> = ({ isOpen, onDidDismiss , on
                                     <IonCol size="12">
                                         <IonRow>
                                             <IonCol>
+                                              <IonLabel style={{ fontWeight: '600', fontSize: 16, color: addressFailed ? 'red' : 'black' }}>
+                                                                                                  Los resultados se basan en tu ubicación actual ( Radio de 5KM). Si no es correcta, ingresa la dirección manualmente o elige ver sin reestricciones de ubicacion
+                                                                                                </IonLabel>
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                                       {loadingAddress ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', padding: 12 }}>
@@ -291,6 +391,7 @@ const ModalLocation: React.FC<ModalLocationProps> = ({ isOpen, onDidDismiss , on
                                                           <div style={{color:'black'}}>Obteniendo ubicación y dirección...</div>
                                                         </div>
                                                       ) : null}
+                                                      
                                                       <IonInput
                                                         style={{fontSize:20}}
                                                         label="Ingresar manualmente"

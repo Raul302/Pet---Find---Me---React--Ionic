@@ -324,6 +324,10 @@ const SearchLocation = (q: string) => {
                                                       <div style={{color:'black'}}>Obteniendo ubicación y dirección...</div>
                                                     </div>
                                                   ) : null}
+
+                                                  <IonLabel style={{ fontWeight: '600', fontSize: 16, color: addressFailed ? 'red' : 'black' }}>
+                                                    Los resultados se basan en tu ubicación actual ( Radio de 5KM). Si no es correcta, ingresa la dirección manualmente o elige ver sin reestricciones de ubicacion
+                                                  </IonLabel>
                                                   <IonInput
                                                     style={{fontSize:20}}
                                                     label="Ingresar manualmente"
@@ -355,7 +359,8 @@ const SearchLocation = (q: string) => {
                                         </IonCol>
                                     </IonRow>
                                     <IonButton disabled={loadingAddress || submitting || !query || query.trim().length===0} className='brown-element' onClick={() => submitAddress(true)} style={{color:'#fff',fontWeight:'600'}} expand="block">Usar esta direccion</IonButton>
-                                    <IonButton disabled={loadingAddress || submitting} className='brown-element' onClick={() => submitAddress(false)} style={{color:'#fff',fontWeight:'600'}} expand="block">No usar</IonButton>
+                                    <IonButton disabled={loadingAddress || submitting} className='brown-element' 
+                                    onClick={() => submitAddress(false)} style={{color:'#fff',fontWeight:'600'}} expand="block">Sin direccion</IonButton>
                                 </IonCol>
                             </IonRow>
                         </IonGrid>
@@ -365,7 +370,7 @@ const SearchLocation = (q: string) => {
                       onDidDismiss={() => setToastOpen(false)}
                       message={toastMsg}
                       duration={5000}
-                      position="bottom"
+                      position="top"
                       color="secondary"
                     />
 

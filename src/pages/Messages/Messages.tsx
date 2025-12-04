@@ -133,7 +133,7 @@ fetch(`${api_endpoint}/conversations/${msg.id}/messages`, {
 
   return (
     <IonPage>
-      <AppHeader />
+      {/* <AppHeader /> */}
       <IonContent>
         <IonToolbar style={{ padding: 12 }}>
           <IonLabel style={{ fontWeight: 700 }}>Mensajes</IonLabel>

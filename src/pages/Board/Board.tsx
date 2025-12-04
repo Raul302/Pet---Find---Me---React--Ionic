@@ -39,6 +39,9 @@ const Board: React.FC = () => {
   const { pets, fetchPets, loadingPets, petsError, user, setSelectedPet } = useContext(AuthContext) as any;
   const history = useHistory();
   const [address_user,set_addres_user] = useState<any>(null);
+  const [carouselPets, setCarouselPets] = useState<any[]>([]);
+  const [loadingCarousel, setLoadingCarousel] = useState(false);
+  const [carouselError, setCarouselError] = useState<string | null>(null);
   // Data source comes from API (pets). If not loaded yet, treat as empty array.
   const dataSource = pets || [];
 
@@ -91,6 +94,31 @@ const Board: React.FC = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    const loadCarouselPets = async () => {
+      setLoadingCarousel(true);
+      setCarouselError(null);
+      try {
+        const token = localStorage.getItem('accessToken');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${api_endpoint}/pets/carrousel/random`, { headers });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json().catch(() => null);
+        const list = Array.isArray(json?.pets) ? json.pets : [];
+        setCarouselPets(list);
+      } catch (err: any) {
+        console.error('Error fetching carousel pets', err);
+        setCarouselError(err?.message || 'No se pudo cargar el carrusel.');
+        setCarouselPets([]);
+      } finally {
+        setLoadingCarousel(false);
+      }
+    };
+
+    loadCarouselPets();
+  }, []);
+
 
 
   const handleCloseModal = () => {
@@ -128,27 +156,65 @@ const Board: React.FC = () => {
           <h2 style={{ color: 'var(--color-primary)', padding: '10px' }} className="carousel-title">
             Mascotas Encontradas
           </h2>
-          <Swiper
-            modules={[Autoplay]}
-            spaceBetween={20}
-            slidesPerView={3}
-            loop={true}
-            autoplay={{ delay: 1000 }}
-            pagination={{ clickable: true }}
-          >
-            <SwiperSlide>
-              <img src="/assets/images/static_resources_testing/cat.jpg" alt="Slide 1" />
-            </SwiperSlide>
-            <SwiperSlide>
-              <img src="/assets/images/static_resources_testing/cat_2.jpg" alt="Slide 2" />
-            </SwiperSlide>
-            <SwiperSlide>
-              <img src="/assets/images/static_resources_testing/cat_3.jpg" alt="Slide 3" />
-            </SwiperSlide>
-            <SwiperSlide>
-              <img src="/assets/images/static_resources_testing/cat_4.jpeg" alt="Slide 4" />
-            </SwiperSlide>
-          </Swiper>
+
+          {loadingCarousel && (
+            <IonText style={{ padding: '0 16px' }}>Cargando carrusel…</IonText>
+          )}
+
+          {carouselError && !loadingCarousel && (
+            <IonText color="danger" style={{ padding: '0 16px' }}>{carouselError}</IonText>
+          )}
+
+          {!loadingCarousel && !carouselError && carouselPets.length === 0 && (
+            <IonText style={{ padding: '0 16px' }}>Aún no hay mascotas para mostrar.</IonText>
+          )}
+
+          {carouselPets.length > 0 && (
+            <Swiper
+              modules={[Autoplay]}
+              spaceBetween={20}
+              slidesPerView={3}
+              loop={carouselPets.length > 3}
+              autoplay={carouselPets.length > 1 ? { delay: 2500 } : false}
+              pagination={{ clickable: true }}
+            >
+              {carouselPets.map((pet, idx) => {
+                const fallback = '/assets/images/static_resources_testing/cat.jpg';
+                const imageUrl = pet?.photo || fallback;
+                return (
+                  <SwiperSlide key={pet?.id ?? idx}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (pet) setSelectedPet?.(pet);
+                        if (pet?.id) history.push(`/tabs/pets/${pet.id}`);
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        padding: 0,
+                        background: 'transparent',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={pet?.name || 'Mascota encontrada'}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '12px',
+                          boxShadow: '0 3px 3px rgba(0,0,0,0.3)'
+                        }}
+                      />
+                    </button>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
+          )}
         </div>
 
         {/* Searchbar */}

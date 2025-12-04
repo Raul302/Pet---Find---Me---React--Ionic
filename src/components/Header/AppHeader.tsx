@@ -46,7 +46,7 @@ const AppHeader: React.FC = () => {
         </IonHeader>
 
     <UserMenu/>
-    <NotificationsMenu/>
+    {/* <NotificationsMenu/> */}
       </>
   );
 };

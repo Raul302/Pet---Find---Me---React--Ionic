@@ -181,7 +181,7 @@ const PetMissing: React.FC = () => {
       let created;
       try { created = JSON.parse(text); } catch (e) { created = text; }
 
-      setToastMsg('Reporte publicado correctamente');
+      setToastMsg('Reporte creado con exito, un administrador lo revisará pronto.');
       setToastOpen(true);
 
       fetchPets();
@@ -367,7 +367,7 @@ const PetMissing: React.FC = () => {
                             <Map onLocationSelect={(lat, lng, addr) => setAddress(addr)} /> */}
 
               <IonButton color="success" disabled={submitting || !isFormValid} onClick={submitReport}>Publicar</IonButton>
-              <IonToast isOpen={toastOpen} message={toastMsg} onDidDismiss={() => setToastOpen(false)} duration={4000} />
+              <IonToast isOpen={toastOpen} message={toastMsg} position='top' onDidDismiss={() => setToastOpen(false)} duration={4000} />
 
 
             </IonCol>
