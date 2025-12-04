@@ -106,6 +106,7 @@ const Board: React.FC = () => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json().catch(() => null);
         const list = Array.isArray(json?.pets) ? json.pets : [];
+        console.log('PETS',list);
         setCarouselPets(list);
       } catch (err: any) {
         console.error('Error fetching carousel pets', err);
@@ -179,8 +180,8 @@ const Board: React.FC = () => {
               pagination={{ clickable: true }}
             >
               {carouselPets.map((pet, idx) => {
-                const fallback = '/assets/images/static_resources_testing/cat.jpg';
-                const imageUrl = pet?.photo || fallback;
+                const fallback = '/assets/images/not_image_example.png';
+                const imageUrl = pet?.photo?.url || fallback;
                 return (
                   <SwiperSlide key={pet?.id ?? idx}>
                     <button
