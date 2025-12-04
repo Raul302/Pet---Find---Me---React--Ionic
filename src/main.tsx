@@ -40,87 +40,87 @@ const updateSW = registerSW({
 
 // ======================================== FIREBASE CONFIG =========================================================================
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+// // Inicializar Firebase
+// const app = initializeApp(firebaseConfig);
+// const messaging = getMessaging(app);
 
-// Registrar el service worker de FCM y usarlo para obtener el token
-async function registerFcmServiceWorker() {
-  if (!('serviceWorker' in navigator)) {
-    console.warn("Service Workers no soportados en este navegador.");
-    return null;
-  }
-  try {
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    console.log("FCM Service Worker registrado:", registration);
-    return registration;
-  } catch (err) {
-    console.error("Error registrando FCM SW:", err);
-    return null;
-  }
-}
+// // Registrar el service worker de FCM y usarlo para obtener el token
+// async function registerFcmServiceWorker() {
+//   if (!('serviceWorker' in navigator)) {
+//     console.warn("Service Workers no soportados en este navegador.");
+//     return null;
+//   }
+//   try {
+//     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+//     console.log("FCM Service Worker registrado:", registration);
+//     return registration;
+//   } catch (err) {
+//     console.error("Error registrando FCM SW:", err);
+//     return null;
+//   }
+// }
 
 
 
  /// NO SE UTILIZA MAS
-// Pedir permiso y obtener token FCM
-async function initFCM() {
-  try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.warn("Permiso de notificaciones no concedido:", permission);
-      return;
-    }
+// // Pedir permiso y obtener token FCM
+// async function initFCM() {
+//   try {
+//     const permission = await Notification.requestPermission();
+//     if (permission !== 'granted') {
+//       console.warn("Permiso de notificaciones no concedido:", permission);
+//       return;
+//     }
 
-    const swReg = await registerFcmServiceWorker();
-    const token = await getToken(messaging, {
-      vapidKey: "BPojyZk6LJYkK-zr_U66xzueqx5akAL6WOw2mttaREftTk_TdQKkIaPefl_CShd7vkqhgMLbBl1r0BW6IzAz38g",
-      serviceWorkerRegistration: swReg || undefined
-    });
+//     const swReg = await registerFcmServiceWorker();
+//     const token = await getToken(messaging, {
+//       vapidKey: "BPojyZk6LJYkK-zr_U66xzueqx5akAL6WOw2mttaREftTk_TdQKkIaPefl_CShd7vkqhgMLbBl1r0BW6IzAz38g",
+//       serviceWorkerRegistration: swReg || undefined
+//     });
 
-    if (!token) {
-      console.warn("No se obtuvo token FCM (posible bloqueo del navegador).");
-      return;
-    }
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      console.error("No hay accessToken, el usuario no está autenticado.");
-      return;
-}
-    console.log("FCM Token:", token);
+//     if (!token) {
+//       console.warn("No se obtuvo token FCM (posible bloqueo del navegador).");
+//       return;
+//     }
+//     const accessToken = localStorage.getItem('accessToken');
+//     if (!accessToken) {
+//       console.error("No hay accessToken, el usuario no está autenticado.");
+//       return;
+// }
+//     console.log("FCM Token:", token);
 
-    // Enviar token a tu backend para guardarlo por usuario
-    await fetch("https://api.lrpm.space/api/save-fcm-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json",
-        'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-       },
-      body: JSON.stringify({ token })
-    });
-  } catch (err) {
-    console.error("Error inicializando FCM:", err);
-  }
-}
+//     // Enviar token a tu backend para guardarlo por usuario
+//     await fetch("https://api.lrpm.space/api/save-fcm-token", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json",
+//         'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+//        },
+//       body: JSON.stringify({ token })
+//     });
+//   } catch (err) {
+//     console.error("Error inicializando FCM:", err);
+//   }
+// }
 
-// Mensajes en foreground (app visible)
-interface NotificationPayload {
-  notification?: {
-    title?: string;
-    body?: string;
-  };
-}
+// // Mensajes en foreground (app visible)
+// interface NotificationPayload {
+//   notification?: {
+//     title?: string;
+//     body?: string;
+//   };
+// }
 
-onMessage(messaging, (payload: NotificationPayload) => {
-  console.log("Mensaje recibido en foreground:", payload);
-  // Para mostrar una notificación del sistema en foreground, usa el SW:
-  if (Notification.permission === 'granted') {
-    const { title, body } = payload.notification || {};
-    alert(`${title || 'Notificación'}\n\n${body || ''}`);
-    new Notification(title || "Notificación", {
-      body: body || "",
-    });
-  }
-});
+// onMessage(messaging, (payload: NotificationPayload) => {
+//   console.log("Mensaje recibido en foreground:", payload);
+//   // Para mostrar una notificación del sistema en foreground, usa el SW:
+//   if (Notification.permission === 'granted') {
+//     const { title, body } = payload.notification || {};
+//     alert(`${title || 'Notificación'}\n\n${body || ''}`);
+//     new Notification(title || "Notificación", {
+//       body: body || "",
+//     });
+//   }
+// });
 
 // initFCM();
 

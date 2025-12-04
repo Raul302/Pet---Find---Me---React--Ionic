@@ -116,7 +116,7 @@ const data_user = localStorage.getItem('data_user') || '{}';
       return null;
     }
     try {
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const registration = await navigator.serviceWorker.register('./sw.js');
       console.log("FCM Service Worker registrado:", registration);
       return registration;
     } catch (err) {
