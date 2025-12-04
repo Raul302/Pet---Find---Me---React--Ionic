@@ -1,6 +1,9 @@
 
 
 /// <reference lib="webworker" />
+console.log("[sw.js] Service Worker cargado");
+
+
 
 
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
@@ -68,13 +71,14 @@ const showNotification = async (payload: NotificationPayload) => {
 self.addEventListener('push', event => {
   if (!event.data) return;
   const raw = (() => {
+    
     try {
       return event.data?.json();
     } catch {
       return event.data?.text();
     }
   })();
-
+console.log("[sw.js] Push genérico recibido:", raw);
   const payload = buildPayload(raw);
   event.waitUntil(showNotification(payload));
 });
