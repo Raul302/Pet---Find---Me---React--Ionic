@@ -3,10 +3,7 @@
 import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-
-
-import { VitePWA } from 'vite-plugin-pwa'  
-
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
@@ -36,15 +33,19 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        cacheId: "v3s.1_petfindme_cache",  
-        cleanupOutdatedCaches: true
-      },
+      // 👇 clave: usar injectManifest para compilar tu sw.ts
+      strategies: 'injectManifest',
       srcDir: 'src',
-  filename: 'sw.ts'
+      filename: 'sw.ts',
+      injectManifest: {
+        swSrc: 'src/sw.ts',   // tu archivo fuente en TS
+        swDest: 'sw.js'       // nombre final en dist/
+      },
+      workbox: {
+        cacheId: "v3s.3_petfindme_cache",
+        cleanupOutdatedCaches: true
+      }
     }),
-    
-    
   ],
   build: {
     rollupOptions: {
@@ -55,7 +56,6 @@ export default defineConfig({
       }
     }
   },
-  
   test: {
     globals: true,
     environment: 'jsdom',
