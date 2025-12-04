@@ -62,7 +62,7 @@ async function registerFcmServiceWorker() {
 
 
 
-
+ /// NO SE UTILIZA MAS
 // Pedir permiso y obtener token FCM
 async function initFCM() {
   try {

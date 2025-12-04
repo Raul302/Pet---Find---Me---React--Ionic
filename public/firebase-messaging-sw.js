@@ -18,11 +18,11 @@ const messaging = firebase.messaging();
 // Notificaciones en background (app cerrada o pestaña no activa)
 messaging.onBackgroundMessage((payload) => {
   console.log("[firebase-messaging-sw] background message:", payload);
-  const { title, body, icon } = payload.notification || {};
+  const { title, body, data } = payload.notification || {};
   self.registration.showNotification(title || "Notificación", {
     body: body || "",
-    icon: icon || "/icon.png",
-    data: payload.data || {}
+    icon: "./favicon.png",
+    data
   });
 });
 
