@@ -36,10 +36,13 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      injectManifest: {
-        swSrc: 'src/sw.ts',
-        swDest: 'dist/sw.js'
-      },
+      // strategies: 'injectManifest',
+      // srcDir: 'src',
+      // filename: 'sw.ts',
+      // injectManifest: {
+      //   swSrc: 'src/sw.ts',
+      //   swDest: 'sw.js'
+      // },
       workbox: {
         cacheId: "v3s.3_petfindme_cache",
         cleanupOutdatedCaches: true,
