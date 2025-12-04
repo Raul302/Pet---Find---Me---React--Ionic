@@ -139,7 +139,10 @@ const data_user = localStorage.getItem('data_user') || '{}';
         serviceWorkerRegistration: swReg || undefined
       });
   
-      console.log(' TOKEN GENERADO ',token);
+      console.log("Token FCM Web/PWA:", token);
+
+
+      
       if (!token) {
         console.warn("No se obtuvo token FCM (posible bloqueo del navegador).");
         return;
