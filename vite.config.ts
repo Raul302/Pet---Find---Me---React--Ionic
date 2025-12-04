@@ -33,9 +33,12 @@ export default defineConfig({
           }
         ]
       },
+      devOptions:{
+        enabled: true
+      },
       strategies: 'injectManifest',
       srcDir: 'src',
-      filename: 'sw.ts',
+      filename: 'sw.js',
       // strategies: 'injectManifest',
       // srcDir: 'src',
       // filename: 'sw.ts',
