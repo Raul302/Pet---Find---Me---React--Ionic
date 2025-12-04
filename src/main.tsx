@@ -111,10 +111,10 @@ interface NotificationPayload {
 
 onMessage(messaging, (payload: NotificationPayload) => {
   console.log("Mensaje recibido en foreground:", payload);
-  // Aquí puedes lanzar un toast, banner, o actualizar UI.
   // Para mostrar una notificación del sistema en foreground, usa el SW:
   if (Notification.permission === 'granted') {
     const { title, body } = payload.notification || {};
+    alert(`${title || 'Notificación'}\n\n${body || ''}`);
     new Notification(title || "Notificación", {
       body: body || "",
     });
