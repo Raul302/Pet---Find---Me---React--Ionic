@@ -62,7 +62,7 @@ import Conversation from './pages/Messages/Conversation';
 import PrivateRoute from './Routers/PrivateRouter';
 import AppHeader from './components/Header/AppHeader';
 import { LiveLocationViewer } from './hooks/SharingLocation/MapToLookRealLocation';
-import { useContext, useEffect, useMemo } from 'react';
+import { useContext, useEffect } from 'react';
 import { AuthContext } from './hooks/Context/AuthContext/AuthContext';
 
 
@@ -77,26 +77,12 @@ setupIonicReact();
 
 const App: React.FC = () => {
 const history = useHistory();
-
-const storedUser = useMemo(() => {
-  try {
-    const raw = localStorage.getItem('data_user');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    const identifier = parsed?.id ?? parsed?.userId;
-    return identifier ? parsed : null;
-  } catch (err) {
-    console.warn('Failed to parse stored user from localStorage', err);
-    return null;
-  }
-}, []);
-
-const hasStoredSession = Boolean(storedUser);
+const data_user = localStorage.getItem('data_user') || '{}';
 // const user = JSON.parse(data_user).id ? JSON.parse(data_user) : null;
 
   const ConditionalHeader: React.FC = () => {
     const location = useLocation();
-    const hidePaths = ['/login', '/register', '/location', '/live/','/live/:token','/tabs/messages'];
+    const hidePaths = ['/login', '/register', '/location', '/live/','/live/:token'];
     const pathname = location?.pathname || '';
     const shouldHide = hidePaths.some(p => pathname.startsWith(p));
     if (shouldHide) return null;
@@ -156,7 +142,7 @@ const hasStoredSession = Boolean(storedUser);
       console.log("Token FCM Web/PWA:", token);
 
 
-
+      
       if (!token) {
         console.warn("No se obtuvo token FCM (posible bloqueo del navegador).");
         return;
@@ -191,19 +177,18 @@ const hasStoredSession = Boolean(storedUser);
     
     <IonRouterOutlet>
 
+      {/* Ruta publica para mostrar mapas */}
+      <Route path="/live/:token" component={LiveLocationViewer} />
+
+
       {/* Rutas fuera de las tabs */}
       <Route exact path="/login">
-        {hasStoredSession ? <Redirect to="/tabs/board" /> : <Login />}
+        <Login />
       </Route>
          <Route exact path="/register">
         <Register />
       </Route>
       <PrivateRoute path="/location">
-      
-      {/* Ruta publica para mostrar mapas */}
-      <Route path="/live/:token" component={LiveLocationViewer} />
-
-
       <QuestionPlace />
     </PrivateRoute>
 

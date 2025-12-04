@@ -26,6 +26,8 @@ const Conversation: React.FC = () => {
     const history = useHistory();
     const { selectedConversation, setSelectedConversation, user: authUser } = useContext(AuthContext) as any;
 
+
+    console.log('selectedConersation',selectedConversation);
     const [isSharing, setIsSharing] = useState(false);
     const [shareToken, setShareToken] = useState<string | null>(null);
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
