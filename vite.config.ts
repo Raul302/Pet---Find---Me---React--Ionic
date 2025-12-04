@@ -33,17 +33,16 @@ export default defineConfig({
           }
         ]
       },
-      // 👇 clave: usar injectManifest para compilar tu sw.ts
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
       injectManifest: {
-        swSrc: 'src/sw.ts',   // tu archivo fuente en TS
-        swDest: 'sw.js'       // nombre final en dist/
+        swSrc: 'src/sw.ts',
+        swDest: 'dist/sw.js'
       },
       workbox: {
         cacheId: "v3s.3_petfindme_cache",
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
       }
     }),
   ],
